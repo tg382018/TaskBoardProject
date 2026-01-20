@@ -3,7 +3,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 
 export function loadExpress(app, { corsOrigins }) {
-    app.use(helmet());
+    app.use(helmet());//header güvenliği
 
     app.use(
         cors({

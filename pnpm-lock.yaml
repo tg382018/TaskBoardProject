@@ -28,7 +28,11 @@ importers:
 
   apps/web: {}
 
-  apps/worker: {}
+  apps/worker:
+    dependencies:
+      dotenv:
+        specifier: ^17.2.3
+        version: 17.2.3
 
   packages/common: {}
 
