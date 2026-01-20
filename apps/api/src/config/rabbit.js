@@ -1,25 +1,30 @@
 import amqplib from "amqplib";
 import { logger } from "../utils/logger.js";
 
+let rabbitConn = null;
+let rabbitChannel = null;
+
 export async function connectRabbit(rabbitUrl) {
-    const conn = await amqplib.connect(rabbitUrl);
-    const channel = await conn.createChannel();
+    rabbitConn = await amqplib.connect(rabbitUrl);
+    rabbitChannel = await rabbitConn.createChannel();
 
     logger.info("rabbit connected");
 
-    // Graceful shutdown
     const close = async () => {
         try {
-            await channel.close();
-            await conn.close();
+            await rabbitChannel?.close();
+            await rabbitConn?.close();
             logger.info("rabbit closed");
-        } catch (e) {
-            // ignore
-        }
+        } catch (e) { }
     };
 
     process.on("SIGINT", close);
     process.on("SIGTERM", close);
 
-    return { conn, channel };
+    return { conn: rabbitConn, channel: rabbitChannel };
+}
+
+export function getRabbitChannel() {
+    if (!rabbitChannel) throw new Error("Rabbit channel not initialized");
+    return rabbitChannel;
 }
