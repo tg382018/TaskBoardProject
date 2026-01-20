@@ -1,9 +1,26 @@
-import { createApp } from "./app.js";
 import { config } from "./config/env.js";
+import { createApp } from "./app.js";
 import { logger } from "./utils/logger.js";
 
-const app = createApp({ corsOrigins: config.corsOrigins });
+import { connectMongo } from "./config/mongo.js";
+import { connectRedis } from "./config/redis.js";
+import { connectRabbit } from "./config/rabbit.js";
 
-app.listen(config.port, () => {
-    logger.info(`API running on http://localhost:${config.port}`);
+async function bootstrap() {
+    // connect infra
+    await connectMongo(config.mongoUrl);
+    connectRedis(config.redisUrl);
+    await connectRabbit(config.rabbitUrl);
+
+    // start api
+    const app = createApp({ corsOrigins: config.corsOrigins });
+
+    app.listen(config.port, () => {
+        logger.info(`API running on http://localhost:${config.port}`);
+    });
+}
+
+bootstrap().catch((err) => {
+    logger.error("bootstrap failed", err);
+    process.exit(1);
 });
