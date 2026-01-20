@@ -13,7 +13,7 @@ export function createApp({ corsOrigins }) {
     loadExpress(app, { corsOrigins });
 
     // routes
-    app.use("/api", buildRoutes());
+    app.use("/api", buildRoutes()); //api prefix 
 
     // error handlers (EN SONA)
     app.use(notFound);
