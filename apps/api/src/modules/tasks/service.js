@@ -18,6 +18,7 @@ export async function createNewTask(userId, data) {
 
     // Trigger event
     await publishEvent("task.created", {
+        type: "task.created",
         taskId: task._id,
         projectId: task.projectId,
         creatorId: userId,
@@ -51,6 +52,7 @@ export async function updateExistingTask(id, userId, data) {
 
     // Trigger event
     await publishEvent("task.updated", {
+        type: "task.updated",
         taskId: updated._id,
         projectId: updated.projectId,
         updatedBy: userId,
@@ -73,6 +75,7 @@ export async function removeTask(id, userId) {
 
     // Trigger event
     await publishEvent("task.deleted", {
+        type: "task.deleted",
         taskId: id,
         projectId: task.projectId,
         deletedBy: userId,
