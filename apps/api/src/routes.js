@@ -1,11 +1,20 @@
 import { Router } from "express";
-import { debugRoutes } from "./modules/debug/debug.routes.js";
+import { authRoutes } from "./modules/auth/routes.js";
+import { usersRoutes } from "./modules/users/routes.js";
+
+/**
+ * Main router
+ 
+ */
 export function buildRoutes() {
     const router = Router();
 
     router.get("/health", (req, res) => {
         res.json({ ok: true });
     });
-    router.use("/debug", debugRoutes());
+
+    router.use("/auth", authRoutes());
+    router.use("/users", usersRoutes());
+
     return router;
 }
