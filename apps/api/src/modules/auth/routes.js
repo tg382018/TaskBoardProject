@@ -5,13 +5,18 @@ import {
   refreshController,
   logoutController
 } from "./controller.js";
+import { validateMiddleware } from "../../middlewares/validate.js";
+import { rateLimitMiddleware } from "../../middlewares/ratelimit.js";
+import { otpRequestSchema, otpVerifySchema, refreshSchema } from "../../schemas/auth.schema.js";
 
 export function authRoutes() {
   const router = Router();
 
-  router.post("/otp/request", requestOtpController);
-  router.post("/otp/verify", verifyOtpController);
-  router.post("/refresh", refreshController);
+  const otpRateLimit = rateLimitMiddleware({ windowMs: 5 * 60 * 1000, max: 5, keyPrefix: "rl:otp:" });
+
+  router.post("/otp/request", otpRateLimit, validateMiddleware(otpRequestSchema), requestOtpController);
+  router.post("/otp/verify", validateMiddleware(otpVerifySchema), verifyOtpController);
+  router.post("/refresh", validateMiddleware(refreshSchema), refreshController);
   router.post("/logout", logoutController);
 
   return router;

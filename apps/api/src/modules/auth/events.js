@@ -1,4 +1,4 @@
-import { publishEvent } from "../../utils/events.js";
+import { publishEvent } from "../../events/publisher.js";
 
 export async function publishOtpRequested({ channel, to, code, requestedFromIp }) {
   const payload = {
