@@ -1,25 +1,19 @@
-import crypto from "crypto";
+import bcrypt from "bcrypt";
 
-/**
- * Refresh token'ı hash'le (DB'de saklamak için)
- * Plain text refresh token client'a gider, hash'i DB'de tutarız
- */
-export function hashToken(token) {
-    return crypto.createHash("sha256").update(token).digest("hex");
+const SALT_ROUNDS = 10;
+
+export async function hashPassword(password) {
+    return bcrypt.hash(password, SALT_ROUNDS);
 }
 
-/**
- * Rastgele token üret (refresh token base)
- */
-export function generateRandomToken(bytes = 32) {
-    return crypto.randomBytes(bytes).toString("hex");
+export async function comparePassword(password, hash) {
+    return bcrypt.compare(password, hash);
 }
 
-/**
- * İki token hash'ini güvenli karşılaştır (timing attack koruması)
- */
-export function compareTokens(token1, token2) {
-    const hash1 = hashToken(token1);
-    const hash2 = hashToken(token2);
-    return crypto.timingSafeEqual(Buffer.from(hash1), Buffer.from(hash2));
+export async function hashToken(token) {
+    return bcrypt.hash(token, SALT_ROUNDS);
+}
+
+export async function compareToken(token, hash) {
+    return bcrypt.compare(token, hash);
 }

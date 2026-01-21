@@ -14,4 +14,9 @@ export const config = {
     mongoUrl: process.env.MONGO_URL || "mongodb://mongo:27017/taskboard",
     redisUrl: process.env.REDIS_URL || "redis://redis:6379",
     rabbitUrl: process.env.RABBIT_URL || "amqp://rabbitmq:5672",
+
+    jwtAccessSecret: process.env.JWT_ACCESS_SECRET || "dev-access-secret",
+    jwtRefreshSecret: process.env.JWT_REFRESH_SECRET || "dev-refresh-secret",
+    jwtAccessExpiry: "15m",
+    jwtRefreshExpiry: "7d",
 };
