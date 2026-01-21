@@ -1,6 +1,6 @@
-// utils/events.js
+
 import { getRabbitChannel } from "../config/rabbit.js";
-import { RABBIT } from "../../../packages/common/src/rabbit-topology.js";
+import { RABBIT } from "../../../../packages/common/src/rabbit-topology.js";
 
 export async function publishEvent(routingKey, payload) {
   const channel = getRabbitChannel();

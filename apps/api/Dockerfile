@@ -17,6 +17,8 @@ COPY apps/web/package.json apps/web/package.json
 
 RUN pnpm install --frozen-lockfile
 
+# packages/common'ı da kopyala (events.js için gerekli)
+COPY packages/common packages/common
 COPY apps/api apps/api
 
 WORKDIR /app/apps/api

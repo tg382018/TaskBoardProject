@@ -6,7 +6,7 @@ export async function requestOtpController(req, res, next) {
     await requestOtp({ email, ip: req.ip });
     res.json({ ok: true });
   } catch (err) {
-    next(err);
+    next(err);//middleware/error.js
   }
 }
 

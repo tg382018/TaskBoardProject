@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { logger } from "../utils/logger.js";
 
 export async function connectMongo(mongoUrl) {
-    mongoose.set("strictQuery", true);
+    mongoose.set("strictQuery", true); //dto mantığı 
 
     await mongoose.connect(mongoUrl);
 

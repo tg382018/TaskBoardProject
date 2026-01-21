@@ -1,3 +1,4 @@
+import { randomInt } from "crypto";
 import { saveOtp, getOtp, deleteOtp, incrementAttempts } from "./repository.js";
 import { publishOtpRequested } from "./events.js";
 
@@ -5,7 +6,7 @@ const OTP_TTL_SECONDS = 5 * 60;
 const MAX_ATTEMPTS = 5;
 
 function generateOtpCode() {
-  return String(Math.floor(100000 + Math.random() * 900000)); // 6 haneli
+  return String(randomInt(100000, 1000000)); // 6 haneli, kriptografik güvenli
 }
 
 export async function requestOtp({ email, ip }) {

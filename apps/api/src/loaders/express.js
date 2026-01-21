@@ -12,5 +12,5 @@ export function loadExpress(app, { corsOrigins }) {
         })
     );
 
-    app.use(morgan("dev"));
+    app.use(morgan("dev"));//detaylı request logları
 }
