@@ -34,9 +34,9 @@ export async function startTaskboardConsumer(channel) {
                 }
 
                 // Kategorize edilmiş handler'lara dağıtıyoruz
-                handleMail(event);
-                handleNotification(event);
-                handleAnalytics(event);
+                await handleMail(event);
+                await handleNotification(event);
+                await handleAnalytics(event);
 
                 channel.ack(msg);
             } catch (err) {
