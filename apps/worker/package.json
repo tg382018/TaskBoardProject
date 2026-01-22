@@ -12,6 +12,10 @@
         "axios": "^1.13.2",
         "dotenv": "^17.2.3",
         "ioredis": "^5.9.2",
-        "mongoose": "^9.1.4"
+        "mongoose": "^9.1.4",
+        "pino": "^10.2.1"
+    },
+    "devDependencies": {
+        "pino-pretty": "^13.1.3"
     }
 }
