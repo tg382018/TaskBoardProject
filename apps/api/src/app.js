@@ -1,5 +1,6 @@
 import express from "express";
 import { loadExpress } from "./loaders/express.js";
+import { loadSwagger } from "./loaders/swagger.js";
 import { buildRoutes } from "./routes.js";
 import { notFound, errorHandler } from "./middlewares/error.js";
 
@@ -11,6 +12,9 @@ export function createApp({ corsOrigins }) {
 
     // global middlewares
     loadExpress(app, { corsOrigins });
+
+    // documentation
+    loadSwagger(app);
 
     // routes
     app.use("/api", buildRoutes()); //api prefix 

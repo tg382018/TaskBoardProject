@@ -1,21 +1,21 @@
 import * as service from "./service.js";
 
-export async function getCommentsController(req, res, next) {
+export async function createCommentController(req, res, next) {
     try {
-        const comments = await service.listTaskComments(req.query.taskId);
-        res.json(comments);
+        const comment = await service.addCommentToTask(req.user._id, req.body);
+        res.status(201).json(comment);
     } catch (err) {
         next(err);
     }
 }
 
-export async function addCommentController(req, res, next) {
+export async function listCommentsController(req, res, next) {
     try {
-        const comment = await service.addComment({
-            ...req.body,
-            authorId: req.user?.sub
-        });
-        res.status(201).json(comment);
+        const { taskId } = req.query;
+        if (!taskId) return res.status(400).json({ error: "taskId is required" });
+
+        const comments = await service.getTaskComments(taskId);
+        res.json(comments);
     } catch (err) {
         next(err);
     }

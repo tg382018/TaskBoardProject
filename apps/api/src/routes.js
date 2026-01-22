@@ -1,6 +1,9 @@
 import { Router } from "express";
 import { authRoutes } from "./modules/auth/routes.js";
 import { usersRoutes } from "./modules/users/routes.js";
+import { projectsRoutes } from "./modules/projects/routes.js";
+import { tasksRoutes } from "./modules/tasks/routes.js";
+import { commentsRoutes } from "./modules/comments/routes.js";
 
 /**
  * Main router
@@ -15,6 +18,9 @@ export function buildRoutes() {
 
     router.use("/auth", authRoutes());
     router.use("/users", usersRoutes());
+    router.use("/projects", projectsRoutes());
+    router.use("/tasks", tasksRoutes());
+    router.use("/comments", commentsRoutes());
 
     return router;
 }

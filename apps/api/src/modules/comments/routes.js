@@ -1,11 +1,16 @@
 import { Router } from "express";
-import * as controller from "./controller.js";
+import { createCommentController, listCommentsController } from "./controller.js";
+import { authMiddleware } from "../../middlewares/auth.js";
+import { validateMiddleware } from "../../middlewares/validate.js";
+import { createCommentSchema } from "../../schemas/comment.schema.js";
 
-export function commentRoutes() {
+export function commentsRoutes() {
   const router = Router();
 
-  router.get("/", controller.getCommentsController);
-  router.post("/", controller.addCommentController);
+  router.use(authMiddleware);
+
+  router.post("/", validateMiddleware(createCommentSchema), createCommentController);
+  router.get("/", listCommentsController);
 
   return router;
 }

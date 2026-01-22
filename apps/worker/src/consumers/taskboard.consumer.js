@@ -1,37 +1,50 @@
-
 import { logger } from "../utils/logger.js";
-
-const EXCHANGE = "taskboard.events";
-const EXCHANGE_TYPE = "topic";
-const QUEUE = "worker.taskboard";
-const BINDINGS = ["task.*"];
+import { handleMail } from "./mailer.consumer.js";
+import { handleNotification } from "./notifier.consumer.js";
+import { handleAnalytics } from "./analytics.consumer.js";
+import { RABBIT } from "../../../../packages/common/src/rabbit-topology.js";
 
 export async function startTaskboardConsumer(channel) {
-    await channel.assertExchange(EXCHANGE, EXCHANGE_TYPE, { durable: true });
+    // Topology'den ayarları çekiyoruz
+    const { exchange, exchangeType, workerQueue } = RABBIT;
+    const bindings = ["task.*", "otp.*", "comment.*"];
 
-    const q = await channel.assertQueue(QUEUE, { durable: true });
+    await channel.assertExchange(exchange, exchangeType, { durable: true });
+    const q = await channel.assertQueue(workerQueue, { durable: true });
 
-    for (const pattern of BINDINGS) {
-        await channel.bindQueue(q.queue, EXCHANGE, pattern);
+    for (const pattern of bindings) {
+        await channel.bindQueue(q.queue, exchange, pattern);
     }
 
-    logger.info(`consumer ready: queue=${q.queue} bindings=${BINDINGS.join(",")}`);
+    logger.info(`consumer ready: queue=${q.queue} bindings=${bindings.join(",")}`);
 
     await channel.consume(
         q.queue,
-        (msg) => {
+        async (msg) => {
             if (!msg) return;
 
             try {
-                const event = JSON.parse(msg.content.toString("utf-8"));
-                logger.info(`received event: ${event.type}`, event);
+                const rawBody = msg.content.toString("utf-8");
+                const event = JSON.parse(rawBody);
+                logger.info(`processing event: ${event.type || 'unknown'}`, { rawBody });
+
+                if (!event.type) {
+                    logger.warn("Skipping event with no type");
+                    return channel.ack(msg);
+                }
+
+                // Kategorize edilmiş handler'lara dağıtıyoruz
+                handleMail(event);
+                handleNotification(event);
+                handleAnalytics(event);
+
                 channel.ack(msg);
             } catch (err) {
                 logger.error("consume error", err);
-                channel.nack(msg, false, false); // şimdilik drop
+                // Hatalı mesajı drop ediyoruz (aa.txt: basitlik için dlq yok)
+                channel.nack(msg, false, false);
             }
         },
         { noAck: false }
     );
 }
-

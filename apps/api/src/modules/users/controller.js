@@ -26,3 +26,12 @@ export async function logoutAllController(req, res, next) {
         next(err);
     }
 }
+
+export async function updateProfileController(req, res, next) {
+    try {
+        const user = await service.updateUserProfile(req.user._id, req.body);
+        res.json(user);
+    } catch (err) {
+        next(err);
+    }
+}
