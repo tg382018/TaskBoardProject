@@ -41,7 +41,7 @@ export async function startTaskboardConsumer(channel) {
                 channel.ack(msg);
             } catch (err) {
                 logger.error("consume error", err);
-                // Hatalı mesajı drop ediyoruz (aa.txt: basitlik için dlq yok)
+                // Hatalı mesajı drop ediyoruz (  basitlik için dlq yok)
                 channel.nack(msg, false, false);
             }
         },

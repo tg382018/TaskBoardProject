@@ -3,9 +3,10 @@ import {
   saveOtp, getOtp, deleteOtp, incrementAttempts,
   createSession, findSessionByToken, deleteSession
 } from "./repository.js";
-import { findOrCreateUser } from "../users/repository.js";
+import { findOrCreateUser, findUserByEmail, User } from "../users/repository.js";
 import { publishOtpRequested } from "./events.js";
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from "../../utils/jwt.js";
+import bcrypt from "bcrypt";
 
 const OTP_TTL_SECONDS = 5 * 60;
 const MAX_ATTEMPTS = 5;
@@ -14,23 +15,68 @@ function generateOtpCode() {
   return String(randomInt(100000, 1000000)); // 6 haneli, kriptografik güvenli
 }
 
-export async function requestOtp({ email, ip }) {
-  if (!email) throw new Error("email is required");
-
+async function sendOtp(email, ip) {
   const code = generateOtpCode();
-
   await saveOtp({
     identifier: email,
     code,
     ttlSeconds: OTP_TTL_SECONDS,
   });
-
   await publishOtpRequested({
     channel: "email",
     to: email,
     code,
     requestedFromIp: ip,
   });
+}
+
+export async function register({ email, password, name, ip }) {
+  let user = await findUserByEmail(email);
+
+  // Eğer kullanıcı varsa ve zaten şifresi/ismi set edilmişse (tam kayıtlıysa) hata ver
+  if (user && user.password) {
+    throw new Error("User already exists");
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  if (!user) {
+    // Yeni kullanıcı
+    user = await User.create({
+      email,
+      password: hashedPassword,
+      name,
+      isVerified: false
+    });
+  } else {
+    // Shadow user güncelleme
+    user.password = hashedPassword;
+    user.name = name;
+    user.isVerified = false;
+    await user.save();
+  }
+
+  await sendOtp(email, ip);
+  return { ok: true, message: "OTP sent to email" };
+}
+
+export async function login({ email, password, ip }) {
+  const user = await findUserByEmail(email);
+  if (!user || !user.password) {
+    throw new Error("Invalid email or password");
+  }
+
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) {
+    throw new Error("Invalid email or password");
+  }
+
+  if (!user.isVerified) {
+    throw new Error("Please verify your account first");
+  }
+
+  await sendOtp(email, ip);
+  return { ok: true, message: "OTP sent for login verification" };
 }
 
 export async function verifyOtp({ email, code }) {
@@ -52,7 +98,14 @@ export async function verifyOtp({ email, code }) {
 
   await deleteOtp({ identifier: email });
 
-  const user = await findOrCreateUser({ email });
+  const user = await findUserByEmail(email);
+  if (!user) throw new Error("User not found");
+
+  // Onaylanmamışsa onayla (Register akışı için)
+  if (!user.isVerified) {
+    user.isVerified = true;
+    await user.save();
+  }
 
   // Token'ları üret
   const accessToken = signAccessToken({ sub: user._id, email: user.email, role: user.role });

@@ -1,33 +1,59 @@
 export const authDocs = {
-    "/auth/otp/request": {
+    "/auth/register": {
         post: {
             tags: ["Auth"],
-            summary: "Request OTP code",
+            summary: "Register new user (or complete shadow user)",
             requestBody: {
                 required: true,
                 content: {
                     "application/json": {
                         schema: {
                             type: "object",
-                            required: ["email"],
+                            required: ["email", "password", "name"],
                             properties: {
-                                email: { type: "string", format: "email" }
+                                email: { type: "string", format: "email" },
+                                password: { type: "string", minLength: 6 },
+                                name: { type: "string" }
                             }
                         }
                     }
                 }
             },
             responses: {
-                200: { description: "OTP sent successfully" },
-                400: { description: "Invalid email" },
-                429: { description: "Too many requests" }
+                200: { description: "OTP sent to email" },
+                400: { description: "User already exists or invalid input" }
             }
         }
     },
-    "/auth/otp/verify": {
+    "/auth/login": {
         post: {
             tags: ["Auth"],
-            summary: "Verify OTP code",
+            summary: "Login with email/password (triggers OTP)",
+            requestBody: {
+                required: true,
+                content: {
+                    "application/json": {
+                        schema: {
+                            type: "object",
+                            required: ["email", "password"],
+                            properties: {
+                                email: { type: "string", format: "email" },
+                                password: { type: "string" }
+                            }
+                        }
+                    }
+                }
+            },
+            responses: {
+                200: { description: "Password correct, OTP sent" },
+                401: { description: "Invalid credentials" }
+            }
+        }
+    },
+    "/auth/verify": {
+        post: {
+            tags: ["Auth"],
+            summary: "Verify OTP and get tokens",
             requestBody: {
                 required: true,
                 content: {
@@ -44,8 +70,15 @@ export const authDocs = {
                 }
             },
             responses: {
-                200: { description: "Logged in successfully", content: { "application/json": { schema: { $ref: "#/components/schemas/LoginResponse" } } } },
-                401: { description: "Invalid code" }
+                200: {
+                    description: "Authenticated successfully",
+                    content: {
+                        "application/json": {
+                            schema: { $ref: "#/components/schemas/LoginResponse" }
+                        }
+                    }
+                },
+                401: { description: "Invalid OTP" }
             }
         }
     },
