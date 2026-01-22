@@ -13,6 +13,13 @@ const userSchema = new mongoose.Schema(
             type: String,
             trim: true,
         },
+        password: {
+            type: String, // bcrypt hash
+        },
+        isVerified: {
+            type: Boolean,
+            default: false,
+        },
         role: {
             type: String,
             enum: ["admin", "member"],

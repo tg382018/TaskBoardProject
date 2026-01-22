@@ -9,3 +9,10 @@ coverage
 .vscode
 .idea
 aa.txt
+
+# Temp & Logs
+*.log
+*.pid
+auth.json
+proj.json
+task.json

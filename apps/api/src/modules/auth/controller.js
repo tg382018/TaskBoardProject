@@ -1,10 +1,18 @@
-import { requestOtp, verifyOtp, refreshTokens, logout } from "./service.js";
+import { register, login, verifyOtp, refreshTokens, logout } from "./service.js";
 
-export async function requestOtpController(req, res, next) {
+export async function registerController(req, res, next) {
     try {
-        const { email } = req.body;
-        await requestOtp({ email, ip: req.ip });
-        res.json({ ok: true });
+        const result = await register({ ...req.body, ip: req.ip });
+        res.json(result);
+    } catch (err) {
+        next(err);
+    }
+}
+
+export async function loginController(req, res, next) {
+    try {
+        const result = await login({ ...req.body, ip: req.ip });
+        res.json(result);
     } catch (err) {
         next(err);
     }

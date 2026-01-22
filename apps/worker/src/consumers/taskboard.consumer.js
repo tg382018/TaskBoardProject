@@ -34,14 +34,14 @@ export async function startTaskboardConsumer(channel) {
                 }
 
                 // Kategorize edilmiş handler'lara dağıtıyoruz
-                handleMail(event);
-                handleNotification(event);
-                handleAnalytics(event);
+                await handleMail(event);
+                await handleNotification(event);
+                await handleAnalytics(event);
 
                 channel.ack(msg);
             } catch (err) {
                 logger.error("consume error", err);
-                // Hatalı mesajı drop ediyoruz (aa.txt: basitlik için dlq yok)
+                // Hatalı mesajı drop ediyoruz (  basitlik için dlq yok)
                 channel.nack(msg, false, false);
             }
         },

@@ -1,11 +1,20 @@
-
-
-// endpointler için uygun DTOlar
-export const otpRequestSchema = {
+export const registerSchema = {
     type: "object",
-    required: ["email"],
+    required: ["email", "password", "name"],
     properties: {
         email: { type: "string", format: "email" },
+        password: { type: "string", minLength: 6 },
+        name: { type: "string", minLength: 2 },
+    },
+    additionalProperties: false,
+};
+
+export const loginSchema = {
+    type: "object",
+    required: ["email", "password"],
+    properties: {
+        email: { type: "string", format: "email" },
+        password: { type: "string" },
     },
     additionalProperties: false,
 };

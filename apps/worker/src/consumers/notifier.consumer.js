@@ -1,11 +1,13 @@
+import { sendBroadcast } from "../services/notify.js";
 import { logger } from "../utils/logger.js";
 
-export function handleNotification(event) {
-    const { type, ...data } = event;
+export async function handleNotification(event) {
+    const { type } = event;
 
-    if (type?.startsWith("task.")) {
-        logger.info(`[NOTIFIER] Task event: ${type}`, data);
-    } else if (type === "comment.added") {
-        logger.info(`[NOTIFIER] New comment on task ${data.taskId} by ${data.authorId}`);
+
+    const success = await sendBroadcast(event);
+
+    if (success) {
+        logger.info(`[NOTIFIER][CONSUMER] Successfully handled: ${type}`);
     }
 }
