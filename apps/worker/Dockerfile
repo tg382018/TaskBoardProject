@@ -12,6 +12,7 @@ COPY apps/web/package.json apps/web/package.json
 
 RUN pnpm install --frozen-lockfile
 
+COPY packages/common packages/common
 COPY apps/worker apps/worker
 
 WORKDIR /app/apps/worker
