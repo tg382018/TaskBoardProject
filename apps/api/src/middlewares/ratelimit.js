@@ -16,7 +16,7 @@ export function rateLimitMiddleware({ windowMs, max, keyPrefix = "rl:" }) {
         try {
             const current = await redis.get(key);
             const hits = parseInt(current || "0", 10);
-
+            //her denemede redisi arttır
             if (hits >= max) {
                 return res.status(429).json({ error: "Too many requests, please try again later." });
             }

@@ -1,6 +1,6 @@
 export const createProjectSchema = {
     type: "object",
-    required: ["title"],
+    required: ["title"], //title zorunlu boş body geçersiz
     properties: {
         title: { type: "string", minLength: 3, maxLength: 100 },
         description: { type: "string", maxLength: 500 },
@@ -9,7 +9,7 @@ export const createProjectSchema = {
 };
 
 export const updateProjectSchema = {
-    type: "object",
+    type: "object",//1 alan zorunlu
     properties: {
         title: { type: "string", minLength: 3, maxLength: 100 },
         description: { type: "string", maxLength: 500 },

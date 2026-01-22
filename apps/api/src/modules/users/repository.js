@@ -5,20 +5,20 @@ const userSchema = new mongoose.Schema(
         email: {
             type: String,
             required: true,
-            unique: true,
-            trim: true,
-            lowercase: true,
+            unique: true, //index
+            trim: true, //boşluk silelim
+            lowercase: true,//küçük harf 
         },
         role: {
             type: String,
             enum: ["admin", "member"],
-            default: "member",
+            default: "member", //default role
         },
     },
-    { timestamps: true }
+    { timestamps: true } //createdAt, updatedAt 
 );
 
-export const User = mongoose.model("User", userSchema);
+export const User = mongoose.model("User", userSchema); //mongo model ve koleksiyon
 
 export async function findOrCreateUser({ email }) {
     let user = await User.findOne({ email });
@@ -28,6 +28,6 @@ export async function findOrCreateUser({ email }) {
     return user;
 }
 
-export async function findUserById(id) {
+export async function findUserById(id) { //getMe  
     return User.findById(id);
 }

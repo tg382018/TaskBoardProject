@@ -1,3 +1,6 @@
+
+
+// endpointler için uygun DTOlar
 export const otpRequestSchema = {
     type: "object",
     required: ["email"],

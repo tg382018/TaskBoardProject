@@ -7,7 +7,7 @@ import { commentsRoutes } from "./modules/comments/routes.js";
 
 /**
  * Main router
- * Ref: aa.txt line 23 & 16
+ 
  */
 export function buildRoutes() {
     const router = Router();

@@ -6,7 +6,7 @@ export function usersRoutes() {
     const router = Router();
 
     // Tüm user rotaları auth gerektirir
-    router.use(authMiddleware);
+    router.use(authMiddleware); //JWT DOGRULAMA
 
     router.get("/me", getMeController);
     router.get("/sessions", getSessionsController);

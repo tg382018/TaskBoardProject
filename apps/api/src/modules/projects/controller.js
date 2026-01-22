@@ -25,7 +25,7 @@ export async function listProjectsController(req, res, next) {
 
 export async function getProjectController(req, res, next) {
     try {
-        const project = await service.getProjectDetail(req.params.id);
+        const project = await service.getProjectDetail(req.params.id, req.user._id);
         res.json(project);
     } catch (err) {
         next(err);
