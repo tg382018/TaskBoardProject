@@ -53,3 +53,16 @@ export async function deleteProjectController(req, res, next) {
         next(err);
     }
 }
+
+export async function addMemberController(req, res, next) {
+    try {
+        const project = await service.inviteMemberToProject(
+            req.params.id,
+            req.user._id,
+            req.body
+        );
+        res.json(project);
+    } catch (err) {
+        next(err);
+    }
+}

@@ -17,3 +17,12 @@ export const updateProjectSchema = {
     minProperties: 1,
     additionalProperties: false,
 };
+
+export const addMemberSchema = {
+    type: "object",
+    required: ["email"],
+    properties: {
+        email: { type: "string", format: "email" },
+    },
+    additionalProperties: false,
+};

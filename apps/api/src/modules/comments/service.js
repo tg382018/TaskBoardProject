@@ -1,10 +1,16 @@
 import * as repository from "./repository.js";
 import { findTaskById } from "../tasks/repository.js";
+import { findProjectById } from "../projects/repository.js";
 import { publishEvent } from "../../events/publisher.js";
 
 export async function addCommentToTask(userId, { content, taskId }) {
     const task = await findTaskById(taskId);
     if (!task) throw new Error("Task not found");
+
+    const project = await findProjectById(task.projectId);
+    if (!project.members.includes(userId) && String(project.ownerId) !== String(userId)) {
+        throw new Error("Unauthorized: Only project members can comment");
+    }
 
     const comment = await repository.createComment({
         content,

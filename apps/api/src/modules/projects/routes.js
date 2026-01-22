@@ -4,11 +4,12 @@ import {
     listProjectsController,
     getProjectController,
     updateProjectController,
-    deleteProjectController
+    deleteProjectController,
+    addMemberController
 } from "./controller.js";
 import { authMiddleware } from "../../middlewares/auth.js";
 import { validateMiddleware } from "../../middlewares/validate.js";
-import { createProjectSchema, updateProjectSchema } from "../../schemas/project.schema.js";
+import { createProjectSchema, updateProjectSchema, addMemberSchema } from "../../schemas/project.schema.js";
 
 export function projectsRoutes() {
     const router = Router();
@@ -20,6 +21,7 @@ export function projectsRoutes() {
     router.get("/:id", getProjectController); //no need for body
     router.patch("/:id", validateMiddleware(updateProjectSchema), updateProjectController);
     router.delete("/:id", deleteProjectController); //no need for body
+    router.post("/:id/members", validateMiddleware(addMemberSchema), addMemberController);
 
     return router;
 }

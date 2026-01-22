@@ -81,5 +81,34 @@ export const projectDocs = {
                 200: { description: "Project deleted" }
             }
         }
+    },
+    "/projects/{id}/members": {
+        post: {
+            tags: ["Projects"],
+            summary: "Add a member to project",
+            security: [{ bearerAuth: [] }],
+            parameters: [
+                { name: "id", in: "path", required: true, schema: { type: "string" } }
+            ],
+            requestBody: {
+                required: true,
+                content: {
+                    "application/json": {
+                        schema: {
+                            type: "object",
+                            required: ["email"],
+                            properties: {
+                                email: { type: "string", format: "email" }
+                            }
+                        }
+                    }
+                }
+            },
+            responses: {
+                200: { description: "Member added successfully" },
+                400: { description: "User not found or invalid input" },
+                403: { description: "Only owner can add members" }
+            }
+        }
     }
 };

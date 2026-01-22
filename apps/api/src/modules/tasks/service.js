@@ -11,6 +11,15 @@ export async function createNewTask(userId, data) {
         throw new Error("Unauthorized: Not a member of this project");
     }
 
+    // Strict Assignment Check
+    if (data.assigneeId) {
+        const isAssigneeMember = project.members.some(m => String(m) === String(data.assigneeId));
+        const isAssigneeOwner = String(project.ownerId) === String(data.assigneeId);
+        if (!isAssigneeMember && !isAssigneeOwner) {
+            throw new Error("Invalid Assignee: User must be a member of the project");
+        }
+    }
+
     const task = await repository.createTask({
         ...data,
         creatorId: userId,
@@ -46,6 +55,20 @@ export async function updateExistingTask(id, userId, data) {
     const project = await findProjectById(task.projectId);
     if (!project.members.includes(userId) && String(project.ownerId) !== String(userId)) {
         throw new Error("Unauthorized");
+    }
+
+    // Strict Assignment Check
+    if (data.assigneeId) {
+        // Redundant update check
+        if (task.assigneeId && String(task.assigneeId) === String(data.assigneeId)) {
+            // No changes needed for assignee
+        }
+
+        const isAssigneeMember = project.members.some(m => String(m) === String(data.assigneeId));
+        const isAssigneeOwner = String(project.ownerId) === String(data.assigneeId);
+        if (!isAssigneeMember && !isAssigneeOwner) {
+            throw new Error("Invalid Assignee: User must be a member of the project");
+        }
     }
 
     const updated = await repository.updateTask(id, data);

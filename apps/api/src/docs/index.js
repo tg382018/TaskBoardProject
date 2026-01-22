@@ -2,6 +2,7 @@ import { authDocs } from "./auth.doc.js";
 import { projectDocs } from "./project.doc.js";
 import { taskDocs } from "./task.doc.js";
 import { commentDocs } from "./comment.doc.js";
+import { userDocs } from "./user.doc.js";
 
 export const swaggerSpec = {
     openapi: "3.0.0",
@@ -46,6 +47,7 @@ export const swaggerSpec = {
     },
     paths: {
         ...authDocs,
+        ...userDocs,
         ...projectDocs,
         ...taskDocs,
         ...commentDocs,

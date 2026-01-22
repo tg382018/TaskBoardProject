@@ -9,6 +9,10 @@ const userSchema = new mongoose.Schema(
             trim: true, //boşluk silelim
             lowercase: true,//küçük harf 
         },
+        name: {
+            type: String,
+            trim: true,
+        },
         role: {
             type: String,
             enum: ["admin", "member"],
@@ -30,4 +34,12 @@ export async function findOrCreateUser({ email }) {
 
 export async function findUserById(id) { //getMe  
     return User.findById(id);
+}
+
+export async function findUserByEmail(email) {
+    return User.findOne({ email });
+}
+
+export async function updateUser(id, data) {
+    return User.findByIdAndUpdate(id, { $set: data }, { new: true });
 }

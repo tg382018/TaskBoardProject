@@ -1,4 +1,5 @@
 import * as repository from "./repository.js";
+import { findOrCreateUser } from "../users/repository.js";
 
 export async function createNewProject({ title, description, ownerId }) {
     return repository.createProject({
@@ -38,4 +39,18 @@ export async function removeProject(id, userId) {
     const deleted = await repository.deleteProject(id, userId);
     if (!deleted) throw new Error("Project not found or unauthorized");
     return deleted;
+}
+
+export async function inviteMemberToProject(id, ownerId, { email }) {
+    const project = await repository.findProjectById(id);
+    if (!project) throw new Error("Project not found");
+
+    if (String(project.ownerId) !== String(ownerId)) {
+        throw new Error("Unauthorized: Only owners can invite members");
+    }
+
+    const userToInvite = await findOrCreateUser({ email });
+    // Note: We don't throw if user is not found anymore, as findOrCreateUser handles it.
+
+    return repository.addMemberToProject(id, userToInvite._id);
 }

@@ -53,3 +53,11 @@ export async function updateProject(id, userId, data) {
 export async function deleteProject(id, userId) {
     return Project.findOneAndDelete({ _id: id, ownerId: userId });
 }
+
+export async function addMemberToProject(id, memberId) {
+    return Project.findByIdAndUpdate(
+        id,
+        { $addToSet: { members: memberId } },
+        { new: true }
+    );
+}

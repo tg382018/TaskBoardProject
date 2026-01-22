@@ -1,4 +1,4 @@
-import { findUserById } from "./repository.js";
+import { findUserById, updateUser } from "./repository.js";
 import { deleteSession, deleteUserSessions } from "../auth/repository.js"; // Session silme auth repoda
 import { Session } from "../auth/repository.js";
 export async function getMe(userId) {
@@ -20,4 +20,8 @@ export async function clearSession(refreshToken) {
 
 export async function clearAllSessions(userId) {
     return deleteUserSessions({ userId });
+}
+
+export async function updateUserProfile(userId, data) {
+    return updateUser(userId, data);
 }
