@@ -35,11 +35,13 @@ export async function createProject(data) {
 export async function findProjectsByUserId(userId) {
     return Project.find({
         $or: [{ ownerId: userId }, { members: userId }],
-    }).sort({ createdAt: -1 });
+    }).sort({ createdAt: -1 }).populate("ownerId", "email name");
 }
 
 export async function findProjectById(id) {
-    return Project.findById(id);
+    return Project.findById(id)
+        .populate("ownerId", "email name")
+        .populate("members", "email name");
 }
 
 export async function updateProject(id, userId, data) {

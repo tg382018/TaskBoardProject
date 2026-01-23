@@ -18,9 +18,9 @@ export async function getProjectDetail(id, userId) {
     const project = await repository.findProjectById(id);
     if (!project) throw new Error("Project not found");
 
-    // Check if user is owner or member
-    const isOwner = String(project.ownerId) === String(userId);
-    const isMember = project.members.some((m) => String(m) === String(userId));
+    // Check if user is owner or member - handle both populated objects and plain IDs
+    const isOwner = String(project.ownerId?._id || project.ownerId) === String(userId);
+    const isMember = project.members.some((m) => String(m?._id || m) === String(userId));
 
     if (!isOwner && !isMember) {
         throw new Error("Unauthorized: You do not have access to this project");
@@ -45,7 +45,7 @@ export async function inviteMemberToProject(id, ownerId, { email }) {
     const project = await repository.findProjectById(id);
     if (!project) throw new Error("Project not found");
 
-    if (String(project.ownerId) !== String(ownerId)) {
+    if (String(project.ownerId?._id || project.ownerId) !== String(ownerId)) {
         throw new Error("Unauthorized: Only owners can invite members");
     }
 

@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { projectsApi } from "../api/projects.api";
 import { tasksApi } from "../../tasks/api/tasks.api";
 import { DataTable } from "@/components/common/data-table";
@@ -48,8 +48,11 @@ const columns = [
     },
 ];
 
+import { useAuthStore } from "../../../store/auth.store";
+
 export default function ProjectDetail() {
     const { id } = useParams();
+    const { user } = useAuthStore();
     const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
     const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
 
@@ -63,9 +66,29 @@ export default function ProjectDetail() {
         queryFn: () => tasksApi.getAll(id),
     });
 
+    const navigate = useNavigate();
+
+    const deleteProjectMutation = useMutation({
+        mutationFn: () => projectsApi.delete(id),
+        onSuccess: () => {
+            navigate("/projects");
+        },
+        onError: (err) => {
+            alert(err.response?.data?.message || "Failed to delete project");
+        }
+    });
+
+    const handleDeleteProject = () => {
+        if (window.confirm("Are you sure you want to delete this project? This action cannot be undone.")) {
+            deleteProjectMutation.mutate();
+        }
+    };
+
     if (isProjectLoading) {
         return <div className="h-64 flex items-center justify-center">Loading project...</div>;
     }
+
+    const isProjectOwner = user?._id === (project.ownerId?._id || project.ownerId);
 
     return (
         <div className="space-y-6">
@@ -83,10 +106,17 @@ export default function ProjectDetail() {
                     <p className="text-muted-foreground">{project.description || "Project management dashboard."}</p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button variant="outline" onClick={() => setIsInviteModalOpen(true)}>
-                        <UserPlus className="w-4 h-4 mr-2" />
-                        Invite
-                    </Button>
+                    {isProjectOwner && (
+                        <>
+                            <Button variant="outline" className="text-destructive hover:bg-destructive/10 border-destructive/50" onClick={handleDeleteProject} disabled={deleteProjectMutation.isPending}>
+                                Delete Project
+                            </Button>
+                            <Button variant="outline" onClick={() => setIsInviteModalOpen(true)}>
+                                <UserPlus className="w-4 h-4 mr-2" />
+                                Invite
+                            </Button>
+                        </>
+                    )}
                     <Button onClick={() => setIsTaskModalOpen(true)}>
                         <Plus className="w-4 h-4 mr-2" />
                         Add Task
@@ -109,15 +139,24 @@ export default function ProjectDetail() {
                 <div className="space-y-6">
                     <div className="bg-card rounded-lg border shadow-sm p-4">
                         <h3 className="text-lg font-medium mb-4">Members</h3>
-                        <div className="space-y-3 font-mono text-xs">
-                            {project.members?.map((memberId) => (
-                                <div key={memberId} className="flex items-center gap-2">
-                                    <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center text-[10px] font-bold">
-                                        {memberId.substring(0, 2).toUpperCase()}
+                        <div className="space-y-3">
+                            {project.members?.map((member) => {
+                                const isMemberOwner = (member._id || member) === (project.ownerId?._id || project.ownerId);
+                                return (
+                                    <div key={member._id || member} className="flex items-center gap-2">
+                                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
+                                            {(member.name || member.email || "?").substring(0, 2).toUpperCase()}
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-medium flex items-center gap-2">
+                                                {member.name || "No Name"}
+                                                {isMemberOwner && <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded">Owner</span>}
+                                            </span>
+                                            <span className="text-xs text-muted-foreground">{member.email}</span>
+                                        </div>
                                     </div>
-                                    <span className="truncate">{memberId}</span>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 </div>

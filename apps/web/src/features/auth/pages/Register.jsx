@@ -5,6 +5,7 @@ import client from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 
 export default function RegisterPage() {
     const navigate = useNavigate();
@@ -14,17 +15,39 @@ export default function RegisterPage() {
         name: ""
     });
 
+    const { toast } = useToast();
+
     const registerMutation = useMutation({
         mutationFn: async (data) => {
             const res = await client.post("/auth/register", data);
             return res.data;
         },
         onSuccess: () => {
-            alert("Registration successful! Please login with your credentials.");
+            toast({
+                title: "Registration successful!",
+                description: "Please login with your new account credentials.",
+            });
             navigate("/login");
         },
         onError: (err) => {
-            alert(err.response?.data?.message || "Registration failed");
+            let description = err.response?.data?.message || "Something went wrong. Please try again.";
+
+            // Handle AJV validation errors
+            if (err.response?.data?.details && Array.isArray(err.response.data.details)) {
+                // Formatting specific validation messages
+                description = err.response.data.details
+                    .map((detail) => {
+                        const field = detail.path.replace("/", "");
+                        return `${field.charAt(0).toUpperCase() + field.slice(1)} ${detail.message}`;
+                    })
+                    .join(". ");
+            }
+
+            toast({
+                variant: "destructive",
+                title: "Registration failed",
+                description: description,
+            });
         }
     });
 

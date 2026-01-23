@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { projectsApi } from "../api/projects.api";
 import { DataTable } from "@/components/common/data-table";
@@ -8,50 +8,70 @@ import { Plus } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
 import { CreateProjectModal } from "../components/CreateProjectModal";
-
-const columns = [
-    {
-        accessorKey: "title",
-        header: "Project Name",
-        cell: ({ row }) => {
-            return (
-                <Link
-                    to={`/projects/${row.original._id}`}
-                    className="font-medium hover:underline text-primary"
-                >
-                    {row.getValue("title")}
-                </Link>
-            );
-        },
-    },
-    {
-        accessorKey: "description",
-        header: "Description",
-        cell: ({ row }) => row.getValue("description") || <span className="text-muted-foreground italic">No description</span>
-    },
-    {
-        accessorKey: "createdAt",
-        header: "Created",
-        cell: ({ row }) => format(new Date(row.getValue("createdAt")), "MMM d, yyyy"),
-    },
-    {
-        id: "members",
-        header: "Members",
-        cell: ({ row }) => (
-            <Badge variant="secondary">
-                {row.original.members?.length || 0} members
-            </Badge>
-        ),
-    },
-];
+import { useAuthStore } from "@/store/auth.store";
 
 export default function ProjectsList() {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const { user } = useAuthStore();
 
     const { data: projects, isLoading } = useQuery({
         queryKey: ["projects"],
         queryFn: projectsApi.getAll,
     });
+
+    const columns = useMemo(() => [
+        {
+            accessorKey: "title",
+            header: "Project Name",
+            cell: ({ row }) => {
+                return (
+                    <Link
+                        to={`/projects/${row.original._id}`}
+                        className="font-medium hover:underline text-primary"
+                    >
+                        {row.getValue("title")}
+                    </Link>
+                );
+            },
+        },
+        {
+            accessorKey: "description",
+            header: "Description",
+            cell: ({ row }) => row.getValue("description") || <span className="text-muted-foreground italic">No description</span>
+        },
+        {
+            id: "source",
+            header: "Source",
+            cell: ({ row }) => {
+                const owner = row.original.ownerId;
+                const isOwner = user?._id === (owner?._id || owner);
+
+                if (isOwner) {
+                    return <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">You created</Badge>;
+                }
+
+                return (
+                    <span className="text-sm text-muted-foreground">
+                        Added by <span className="font-medium text-foreground">{owner?.name || owner?.email || "Unknown"}</span>
+                    </span>
+                );
+            }
+        },
+        {
+            accessorKey: "createdAt",
+            header: "Created",
+            cell: ({ row }) => format(new Date(row.getValue("createdAt")), "MMM d, yyyy"),
+        },
+        {
+            id: "members",
+            header: "Members",
+            cell: ({ row }) => (
+                <Badge variant="secondary">
+                    {row.original.members?.length || 0} members
+                </Badge>
+            ),
+        },
+    ], [user]);
 
     return (
         <div className="space-y-6">

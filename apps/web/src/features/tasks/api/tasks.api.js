@@ -7,4 +7,5 @@ export const tasksApi = {
     update: (id, data) => client.patch(`/tasks/${id}`, data).then((res) => res.data),
     addComment: (taskId, content) =>
         client.post("/comments", { taskId, content }).then((res) => res.data),
+    delete: (id) => client.delete(`/tasks/${id}`).then((res) => res.data),
 };

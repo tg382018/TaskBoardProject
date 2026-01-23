@@ -5,10 +5,12 @@ import { useAuthStore } from "@/store/auth.store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
 
 export default function OtpForm({ email, onBack }) {
     const [code, setCode] = useState("");
+    const { toast } = useToast();
     const { setAuth } = useAuthStore();
 
     const verifyMutation = useMutation({
@@ -20,7 +22,11 @@ export default function OtpForm({ email, onBack }) {
             setAuth(data); // Save user and tokens to store
         },
         onError: (err) => {
-            alert(err.response?.data?.message || "Invalid OTP code");
+            toast({
+                variant: "destructive",
+                title: "Verification failed",
+                description: err.response?.data?.message || "Invalid OTP code",
+            });
         }
     });
 

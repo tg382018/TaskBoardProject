@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 
 export function CreateTaskModal({ open, onOpenChange, projectId }) {
     const [title, setTitle] = useState("");
+    const [description, setDescription] = useState("");
     const [priority, setPriority] = useState("Medium");
     const queryClient = useQueryClient();
 
@@ -23,6 +24,7 @@ export function CreateTaskModal({ open, onOpenChange, projectId }) {
             queryClient.invalidateQueries({ queryKey: ["project-tasks", projectId] });
             onOpenChange(false);
             setTitle("");
+            setDescription("");
             setPriority("Medium");
         },
         onError: (err) => {
@@ -32,7 +34,11 @@ export function CreateTaskModal({ open, onOpenChange, projectId }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        createMutation.mutate({ title, priority });
+        const data = { title, priority };
+        if (description.trim()) {
+            data.description = description.trim();
+        }
+        createMutation.mutate(data);
     };
 
     return (
@@ -50,6 +56,16 @@ export function CreateTaskModal({ open, onOpenChange, projectId }) {
                             onChange={(e) => setTitle(e.target.value)}
                             placeholder="e.g. Design landing page"
                             required
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="description">Description (optional)</Label>
+                        <textarea
+                            id="description"
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            placeholder="Add a description for this task..."
+                            className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                         />
                     </div>
                     <div className="space-y-2">

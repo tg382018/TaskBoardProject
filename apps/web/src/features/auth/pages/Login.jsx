@@ -5,12 +5,15 @@ import client from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 import OtpForm from "../components/OtpForm";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [step, setStep] = useState("login"); // 'login' | 'otp'
+
+    const { toast } = useToast();
 
     const loginMutation = useMutation({
         mutationFn: async (data) => {
@@ -21,7 +24,11 @@ export default function LoginPage() {
             setStep("otp");
         },
         onError: (err) => {
-            alert(err.response?.data?.message || "Login failed");
+            toast({
+                variant: "destructive",
+                title: "Login failed",
+                description: err.response?.data?.message || "Invalid email or password",
+            });
         }
     });
 

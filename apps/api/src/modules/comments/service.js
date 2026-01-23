@@ -8,7 +8,9 @@ export async function addCommentToTask(userId, { content, taskId }) {
     if (!task) throw new Error("Task not found");
 
     const project = await findProjectById(task.projectId);
-    if (!project.members.includes(userId) && String(project.ownerId) !== String(userId)) {
+    const isOwner = String(project.ownerId?._id || project.ownerId) === String(userId);
+    const isMember = project.members.some(m => String(m?._id || m) === String(userId));
+    if (!isMember && !isOwner) {
         throw new Error("Unauthorized: Only project members can comment");
     }
 
