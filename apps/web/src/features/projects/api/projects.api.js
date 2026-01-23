@@ -7,4 +7,5 @@ export const projectsApi = {
     addMember: (projectId, email) =>
         client.post(`/projects/${projectId}/members`, { email }).then((res) => res.data),
     delete: (id) => client.delete(`/projects/${id}`).then((res) => res.data),
+    getLogs: (id) => client.get(`/projects/${id}/logs`).then((res) => res.data),
 };

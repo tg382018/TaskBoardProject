@@ -8,12 +8,18 @@ import ProjectsList from "@/features/projects/pages/ProjectsList";
 import ProjectDetail from "@/features/projects/pages/ProjectDetail";
 import TaskDetail from "@/features/tasks/pages/TaskDetail";
 import ProfilePage from "@/features/profile/pages/Profile";
+import { DailySummaryWidget } from "@/components/widgets/DailySummaryWidget";
 
-// Placeholder for Dashboard (Part of Auth Core verification)
+// Dashboard with Daily Summary Widget
 const Dashboard = () => (
-    <div className="space-y-4">
-        <h1 className="text-2xl font-bold">Welcome back!</h1>
-        <p className="text-muted-foreground">Select a project to get started with your tasks.</p>
+    <div className="space-y-6">
+        <div>
+            <h1 className="text-2xl font-bold">Welcome back!</h1>
+            <p className="text-muted-foreground">
+                Select a project to get started with your tasks.
+            </p>
+        </div>
+        <DailySummaryWidget />
     </div>
 );
 

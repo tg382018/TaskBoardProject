@@ -6,7 +6,7 @@ import { publishEvent } from "../../events/publisher.js";
 // Helper function for authorization check
 function checkProjectAccess(project, userId) {
     const isOwner = String(project.ownerId?._id || project.ownerId) === String(userId);
-    const isMember = project.members.some(m => String(m?._id || m) === String(userId));
+    const isMember = project.members.some((m) => String(m?._id || m) === String(userId));
     return isOwner || isMember;
 }
 
@@ -21,8 +21,11 @@ export async function createNewTask(userId, data) {
 
     // Strict Assignment Check
     if (data.assigneeId) {
-        const isAssigneeMember = project.members.some(m => String(m?._id || m) === String(data.assigneeId));
-        const isAssigneeOwner = String(project.ownerId?._id || project.ownerId) === String(data.assigneeId);
+        const isAssigneeMember = project.members.some(
+            (m) => String(m?._id || m) === String(data.assigneeId)
+        );
+        const isAssigneeOwner =
+            String(project.ownerId?._id || project.ownerId) === String(data.assigneeId);
         if (!isAssigneeMember && !isAssigneeOwner) {
             throw new Error("Invalid Assignee: User must be a member of the project");
         }
@@ -45,16 +48,20 @@ export async function createNewTask(userId, data) {
     return task;
 }
 
-export async function getProjectTasks(userId, projectId, {
-    page = 1,
-    limit = 10,
-    skip = 0,
-    search = "",
-    assigneeId = null,
-    tag = null,
-    sortBy = "createdAt",
-    sortOrder = "desc"
-} = {}) {
+export async function getProjectTasks(
+    userId,
+    projectId,
+    {
+        page = 1,
+        limit = 10,
+        skip = 0,
+        search = "",
+        assigneeId = null,
+        tag = null,
+        sortBy = "createdAt",
+        sortOrder = "desc",
+    } = {}
+) {
     const project = await findProjectById(projectId);
     if (!project) throw new Error("Project not found");
 
@@ -69,7 +76,7 @@ export async function getProjectTasks(userId, projectId, {
         assigneeId,
         tag,
         sortBy,
-        sortOrder
+        sortOrder,
     });
 
     return {
@@ -78,8 +85,8 @@ export async function getProjectTasks(userId, projectId, {
             total,
             page,
             limit,
-            totalPages: Math.ceil(total / limit)
-        }
+            totalPages: Math.ceil(total / limit),
+        },
     };
 }
 
@@ -97,7 +104,8 @@ export async function getTaskById(userId, taskId) {
     // Check task-level access: owner, task creator, or task assignee
     const isProjectOwner = String(project.ownerId?._id || project.ownerId) === String(userId);
     const isTaskCreator = String(task.creatorId?._id || task.creatorId) === String(userId);
-    const isTaskAssignee = task.assigneeId && String(task.assigneeId?._id || task.assigneeId) === String(userId);
+    const isTaskAssignee =
+        task.assigneeId && String(task.assigneeId?._id || task.assigneeId) === String(userId);
 
     if (!isProjectOwner && !isTaskCreator && !isTaskAssignee) {
         throw new Error("Owner has not authorized you for this task");
@@ -128,15 +136,21 @@ export async function updateExistingTask(id, userId, data) {
         } else {
             // Only Project Owner or Task Creator can change assignee
             // Note: task.creatorId might be populated, handle both cases
-            const isProjectOwner = String(project.ownerId?._id || project.ownerId) === String(userId);
+            const isProjectOwner =
+                String(project.ownerId?._id || project.ownerId) === String(userId);
             const isTaskCreator = String(task.creatorId?._id || task.creatorId) === String(userId);
 
             if (!isProjectOwner && !isTaskCreator) {
-                throw new Error("Unauthorized: Only task creator or project owner can assign members");
+                throw new Error(
+                    "Unauthorized: Only task creator or project owner can assign members"
+                );
             }
 
-            const isAssigneeMember = project.members.some(m => String(m?._id || m) === String(data.assigneeId));
-            const isAssigneeOwner = String(project.ownerId?._id || project.ownerId) === String(data.assigneeId);
+            const isAssigneeMember = project.members.some(
+                (m) => String(m?._id || m) === String(data.assigneeId)
+            );
+            const isAssigneeOwner =
+                String(project.ownerId?._id || project.ownerId) === String(data.assigneeId);
             if (!isAssigneeMember && !isAssigneeOwner && data.assigneeId !== null) {
                 throw new Error("Invalid Assignee: User must be a member of the project");
             }
@@ -149,6 +163,7 @@ export async function updateExistingTask(id, userId, data) {
     await publishEvent("task.updated", {
         type: "task.updated",
         taskId: updated._id,
+        taskTitle: updated.title,
         projectId: updated.projectId,
         updatedBy: userId,
         changes: data,

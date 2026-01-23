@@ -1,20 +1,24 @@
-import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 import client from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 
+// Yup validation schema
+const registerSchema = Yup.object().shape({
+    name: Yup.string().min(2, "Name must be at least 2 characters").required("Name is required"),
+    email: Yup.string().email("Please enter a valid email address").required("Email is required"),
+    password: Yup.string()
+        .min(6, "Password must be at least 6 characters")
+        .required("Password is required"),
+});
+
 export default function RegisterPage() {
     const navigate = useNavigate();
-    const [formData, setFormData] = useState({
-        email: "",
-        password: "",
-        name: ""
-    });
-
     const { toast } = useToast();
 
     const registerMutation = useMutation({
@@ -30,11 +34,11 @@ export default function RegisterPage() {
             navigate("/login");
         },
         onError: (err) => {
-            let description = err.response?.data?.message || "Something went wrong. Please try again.";
+            let description =
+                err.response?.data?.message || "Something went wrong. Please try again.";
 
             // Handle AJV validation errors
             if (err.response?.data?.details && Array.isArray(err.response.data.details)) {
-                // Formatting specific validation messages
                 description = err.response.data.details
                     .map((detail) => {
                         const field = detail.path.replace("/", "");
@@ -48,17 +52,20 @@ export default function RegisterPage() {
                 title: "Registration failed",
                 description: description,
             });
-        }
+        },
     });
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        registerMutation.mutate(formData);
-    };
-
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.id]: e.target.value });
-    };
+    const formik = useFormik({
+        initialValues: {
+            name: "",
+            email: "",
+            password: "",
+        },
+        validationSchema: registerSchema,
+        onSubmit: (values) => {
+            registerMutation.mutate(values);
+        },
+    });
 
     return (
         <div className="space-y-6">
@@ -69,42 +76,69 @@ export default function RegisterPage() {
                 </p>
             </div>
 
-            <form className="space-y-4" onSubmit={handleSubmit}>
+            <form className="space-y-4" onSubmit={formik.handleSubmit}>
                 <div className="space-y-2">
                     <Label htmlFor="name">Full Name</Label>
                     <Input
                         id="name"
+                        name="name"
                         placeholder="John Doe"
-                        value={formData.name}
-                        onChange={handleChange}
-                        required
+                        value={formik.values.name}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        className={
+                            formik.touched.name && formik.errors.name ? "border-destructive" : ""
+                        }
                     />
+                    {formik.touched.name && formik.errors.name && (
+                        <p className="text-xs text-destructive">{formik.errors.name}</p>
+                    )}
                 </div>
 
                 <div className="space-y-2">
                     <Label htmlFor="email">Email address</Label>
                     <Input
                         id="email"
+                        name="email"
                         type="email"
                         placeholder="name@example.com"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
+                        value={formik.values.email}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        className={
+                            formik.touched.email && formik.errors.email ? "border-destructive" : ""
+                        }
                     />
+                    {formik.touched.email && formik.errors.email && (
+                        <p className="text-xs text-destructive">{formik.errors.email}</p>
+                    )}
                 </div>
 
                 <div className="space-y-2">
                     <Label htmlFor="password">Password</Label>
                     <Input
                         id="password"
+                        name="password"
                         type="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        required
+                        value={formik.values.password}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        className={
+                            formik.touched.password && formik.errors.password
+                                ? "border-destructive"
+                                : ""
+                        }
                     />
+                    {formik.touched.password && formik.errors.password && (
+                        <p className="text-xs text-destructive">{formik.errors.password}</p>
+                    )}
                 </div>
 
-                <Button type="submit" className="w-full" disabled={registerMutation.isPending}>
+                <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={registerMutation.isPending || !formik.isValid}
+                >
                     {registerMutation.isPending ? "Creating account..." : "Sign Up"}
                 </Button>
             </form>

@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { projectsApi } from "../api/projects.api";
@@ -30,6 +30,8 @@ import {
 import { useAuthStore } from "../../../store/auth.store";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useToast } from "@/hooks/use-toast";
+import { useSocket } from "@/app/providers/socket-provider";
+import { useSocketEvent } from "@/hooks/use-socket-event";
 
 export default function ProjectDetail() {
     const { id } = useParams();
@@ -37,6 +39,51 @@ export default function ProjectDetail() {
     const queryClient = useQueryClient();
     const navigate = useNavigate();
     const { toast } = useToast();
+    const socket = useSocket();
+
+    // Join project room for realtime updates
+    useEffect(() => {
+        if (socket && id) {
+            socket.emit("project:join", id);
+        }
+    }, [socket, id]);
+
+    // Realtime socket event handlers - invalidate task list when events occur
+    useSocketEvent(
+        "task.created",
+        useCallback(
+            (data) => {
+                if (data.projectId === id) {
+                    queryClient.invalidateQueries({ queryKey: ["project-tasks", id] });
+                }
+            },
+            [id, queryClient]
+        )
+    );
+
+    useSocketEvent(
+        "task.updated",
+        useCallback(
+            (data) => {
+                if (data.projectId === id) {
+                    queryClient.invalidateQueries({ queryKey: ["project-tasks", id] });
+                }
+            },
+            [id, queryClient]
+        )
+    );
+
+    useSocketEvent(
+        "task.deleted",
+        useCallback(
+            (data) => {
+                if (data.projectId === id) {
+                    queryClient.invalidateQueries({ queryKey: ["project-tasks", id] });
+                }
+            },
+            [id, queryClient]
+        )
+    );
 
     // Modal states
     const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
@@ -67,16 +114,27 @@ export default function ProjectDetail() {
     });
 
     const { data: tasks, isLoading: isTasksLoading } = useQuery({
-        queryKey: ["project-tasks", id, page, limit, debouncedSearch, filterAssignee, filterTag, sortBy, sortOrder],
-        queryFn: () => tasksApi.getAll(id, {
+        queryKey: [
+            "project-tasks",
+            id,
             page,
             limit,
-            search: debouncedSearch,
-            assigneeId: filterAssignee || undefined,
-            tag: filterTag || undefined,
+            debouncedSearch,
+            filterAssignee,
+            filterTag,
             sortBy,
-            sortOrder
-        }),
+            sortOrder,
+        ],
+        queryFn: () =>
+            tasksApi.getAll(id, {
+                page,
+                limit,
+                search: debouncedSearch,
+                assigneeId: filterAssignee || undefined,
+                tag: filterTag || undefined,
+                sortBy,
+                sortOrder,
+            }),
     });
 
     const deleteProjectMutation = useMutation({
@@ -90,7 +148,7 @@ export default function ProjectDetail() {
                 title: "Delete failed",
                 description: err.response?.data?.message || "Failed to delete project",
             });
-        }
+        },
     });
 
     const updateTaskMutation = useMutation({
@@ -110,7 +168,7 @@ export default function ProjectDetail() {
                 title: "Update failed",
                 description: err.response?.data?.message || "Failed to update task",
             });
-        }
+        },
     });
 
     const handleSearch = useCallback((value) => {
@@ -158,195 +216,242 @@ export default function ProjectDetail() {
 
     const isProjectOwner = user?._id === (project?.ownerId?._id || project?.ownerId);
 
-    const columns = useMemo(() => [
-        {
-            id: "title",
-            accessorKey: "title",
-            header: "Task",
-            enableSorting: false,
-            cell: ({ row }) => {
-                const task = row.original;
-                const isEditing = editingCell?.rowId === task._id && editingCell?.field === "title";
-                const editable = canEditTask(task);
+    const columns = useMemo(
+        () => [
+            {
+                id: "title",
+                accessorKey: "title",
+                header: "Task",
+                enableSorting: false,
+                cell: ({ row }) => {
+                    const task = row.original;
+                    const isEditing =
+                        editingCell?.rowId === task._id && editingCell?.field === "title";
+                    const editable = canEditTask(task);
 
-                if (isEditing) {
+                    if (isEditing) {
+                        return (
+                            <div className="flex items-center gap-1">
+                                <Input
+                                    value={editValue}
+                                    onChange={(e) => setEditValue(e.target.value)}
+                                    className="h-7 text-sm"
+                                    autoFocus
+                                />
+                                <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-6 w-6"
+                                    onClick={() => saveEditing(task._id)}
+                                >
+                                    <Check className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-6 w-6"
+                                    onClick={cancelEditing}
+                                >
+                                    <X className="h-3 w-3" />
+                                </Button>
+                            </div>
+                        );
+                    }
+
                     return (
-                        <div className="flex items-center gap-1">
-                            <Input
-                                value={editValue}
-                                onChange={(e) => setEditValue(e.target.value)}
-                                className="h-7 text-sm"
-                                autoFocus
-                            />
-                            <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => saveEditing(task._id)}>
-                                <Check className="h-3 w-3" />
-                            </Button>
-                            <Button size="icon" variant="ghost" className="h-6 w-6" onClick={cancelEditing}>
-                                <X className="h-3 w-3" />
-                            </Button>
+                        <div className="flex items-center gap-2 group">
+                            <Link to={`/tasks/${task._id}`} className="font-medium hover:underline">
+                                {task.title}
+                            </Link>
+                            {editable && (
+                                <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-6 w-6 text-muted-foreground opacity-50 hover:opacity-100"
+                                    onClick={() => startEditing(task._id, "title", task.title)}
+                                    title="Edit task title"
+                                >
+                                    <Pencil className="h-3 w-3" />
+                                </Button>
+                            )}
                         </div>
                     );
-                }
-
-                return (
-                    <div className="flex items-center gap-2 group">
-                        <Link to={`/tasks/${task._id}`} className="font-medium hover:underline">
-                            {task.title}
-                        </Link>
-                        {editable && (
-                            <Button
-                                size="icon"
-                                variant="ghost"
-                                className="h-6 w-6 text-muted-foreground opacity-50 hover:opacity-100"
-                                onClick={() => startEditing(task._id, "title", task.title)}
-                                title="Edit task title"
-                            >
-                                <Pencil className="h-3 w-3" />
-                            </Button>
-                        )}
-                    </div>
-                );
+                },
             },
-        },
-        {
-            id: "status",
-            accessorKey: "status",
-            header: "Status",
-            enableSorting: true,
-            cell: ({ row }) => {
-                const task = row.original;
-                const status = task.status;
-                const isEditing = editingCell?.rowId === task._id && editingCell?.field === "status";
-                const editable = canEditTask(task);
+            {
+                id: "status",
+                accessorKey: "status",
+                header: "Status",
+                enableSorting: true,
+                cell: ({ row }) => {
+                    const task = row.original;
+                    const status = task.status;
+                    const isEditing =
+                        editingCell?.rowId === task._id && editingCell?.field === "status";
+                    const editable = canEditTask(task);
 
-                if (isEditing) {
+                    if (isEditing) {
+                        return (
+                            <div className="flex items-center gap-1">
+                                <Select value={editValue} onValueChange={setEditValue}>
+                                    <SelectTrigger className="h-7 w-28">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Todo">Todo</SelectItem>
+                                        <SelectItem value="InProgress">In Progress</SelectItem>
+                                        <SelectItem value="Done">Done</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-6 w-6"
+                                    onClick={() => saveEditing(task._id)}
+                                >
+                                    <Check className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-6 w-6"
+                                    onClick={cancelEditing}
+                                >
+                                    <X className="h-3 w-3" />
+                                </Button>
+                            </div>
+                        );
+                    }
+
+                    const variants = {
+                        Todo: "secondary",
+                        InProgress: "default",
+                        Done: "outline",
+                    };
                     return (
-                        <div className="flex items-center gap-1">
-                            <Select value={editValue} onValueChange={setEditValue}>
-                                <SelectTrigger className="h-7 w-28">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Todo">Todo</SelectItem>
-                                    <SelectItem value="InProgress">In Progress</SelectItem>
-                                    <SelectItem value="Done">Done</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => saveEditing(task._id)}>
-                                <Check className="h-3 w-3" />
-                            </Button>
-                            <Button size="icon" variant="ghost" className="h-6 w-6" onClick={cancelEditing}>
-                                <X className="h-3 w-3" />
-                            </Button>
+                        <div
+                            className={`flex items-center gap-2 ${editable ? "cursor-pointer group" : ""}`}
+                            onClick={() => editable && startEditing(task._id, "status", status)}
+                        >
+                            <Badge variant={variants[status] || "secondary"}>{status}</Badge>
+                            {editable && (
+                                <Pencil className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                            )}
                         </div>
                     );
-                }
-
-                const variants = {
-                    Todo: "secondary",
-                    InProgress: "default",
-                    Done: "outline",
-                };
-                return (
-                    <div
-                        className={`flex items-center gap-2 ${editable ? "cursor-pointer group" : ""}`}
-                        onClick={() => editable && startEditing(task._id, "status", status)}
-                    >
-                        <Badge variant={variants[status] || "secondary"}>{status}</Badge>
-                        {editable && (
-                            <Pencil className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                        )}
-                    </div>
-                );
+                },
             },
-        },
-        {
-            id: "priority",
-            accessorKey: "priority",
-            header: "Priority",
-            enableSorting: true,
-            cell: ({ row }) => {
-                const priority = row.getValue("priority");
-                const colors = {
-                    High: "text-destructive",
-                    Medium: "text-orange-500",
-                    Low: "text-green-500",
-                };
-                return <span className={`font-medium ${colors[priority]}`}>{priority}</span>;
+            {
+                id: "priority",
+                accessorKey: "priority",
+                header: "Priority",
+                enableSorting: true,
+                cell: ({ row }) => {
+                    const priority = row.getValue("priority");
+                    const colors = {
+                        High: "text-destructive",
+                        Medium: "text-orange-500",
+                        Low: "text-green-500",
+                    };
+                    return <span className={`font-medium ${colors[priority]}`}>{priority}</span>;
+                },
             },
-        },
-        {
-            id: "assigneeId",
-            header: "Assignee",
-            enableSorting: false,
-            cell: ({ row }) => {
-                const task = row.original;
-                const assignee = task.assigneeId;
-                const isEditing = editingCell?.rowId === task._id && editingCell?.field === "assigneeId";
-                const editable = canEditTask(task);
+            {
+                id: "assigneeId",
+                header: "Assignee",
+                enableSorting: false,
+                cell: ({ row }) => {
+                    const task = row.original;
+                    const assignee = task.assigneeId;
+                    const isEditing =
+                        editingCell?.rowId === task._id && editingCell?.field === "assigneeId";
+                    const editable = canEditTask(task);
 
-                if (isEditing) {
+                    if (isEditing) {
+                        return (
+                            <div className="flex items-center gap-1">
+                                <Select
+                                    value={editValue || "__none__"}
+                                    onValueChange={(v) => setEditValue(v === "__none__" ? "" : v)}
+                                >
+                                    <SelectTrigger className="h-7 w-28">
+                                        <SelectValue placeholder="Unassigned" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="__none__">Unassigned</SelectItem>
+                                        {project?.members?.map((member) => (
+                                            <SelectItem key={member._id} value={member._id}>
+                                                {member.name || member.email}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-6 w-6"
+                                    onClick={() => saveEditing(task._id)}
+                                >
+                                    <Check className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-6 w-6"
+                                    onClick={cancelEditing}
+                                >
+                                    <X className="h-3 w-3" />
+                                </Button>
+                            </div>
+                        );
+                    }
+
                     return (
-                        <div className="flex items-center gap-1">
-                            <Select value={editValue || "__none__"} onValueChange={(v) => setEditValue(v === "__none__" ? "" : v)}>
-                                <SelectTrigger className="h-7 w-28">
-                                    <SelectValue placeholder="Unassigned" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="__none__">Unassigned</SelectItem>
-                                    {project?.members?.map((member) => (
-                                        <SelectItem key={member._id} value={member._id}>
-                                            {member.name || member.email}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => saveEditing(task._id)}>
-                                <Check className="h-3 w-3" />
-                            </Button>
-                            <Button size="icon" variant="ghost" className="h-6 w-6" onClick={cancelEditing}>
-                                <X className="h-3 w-3" />
-                            </Button>
+                        <div
+                            className={editable ? "cursor-pointer" : ""}
+                            onClick={() =>
+                                editable &&
+                                startEditing(task._id, "assigneeId", assignee?._id || "")
+                            }
+                        >
+                            {assignee ? (
+                                <span className="text-sm">{assignee.name || assignee.email}</span>
+                            ) : (
+                                <span className="text-muted-foreground text-sm italic">
+                                    Unassigned
+                                </span>
+                            )}
                         </div>
                     );
-                }
-
-                return (
-                    <div
-                        className={editable ? "cursor-pointer" : ""}
-                        onClick={() => editable && startEditing(task._id, "assigneeId", assignee?._id || "")}
-                    >
-                        {assignee ? (
-                            <span className="text-sm">{assignee.name || assignee.email}</span>
-                        ) : (
-                            <span className="text-muted-foreground text-sm italic">Unassigned</span>
-                        )}
-                    </div>
-                );
+                },
             },
-        },
-        {
-            id: "tags",
-            header: "Tags",
-            enableSorting: false,
-            cell: ({ row }) => {
-                const tags = row.original.tags || [];
-                if (tags.length === 0) return <span className="text-muted-foreground italic text-sm">-</span>;
-                return (
-                    <div className="flex flex-wrap gap-1">
-                        {tags.slice(0, 3).map((tag, i) => (
-                            <Badge key={i} variant="outline" className="text-xs">
-                                {tag}
-                            </Badge>
-                        ))}
-                        {tags.length > 3 && (
-                            <span className="text-xs text-muted-foreground">+{tags.length - 3}</span>
-                        )}
-                    </div>
-                );
+            {
+                id: "tags",
+                header: "Tags",
+                enableSorting: false,
+                cell: ({ row }) => {
+                    const tags = row.original.tags || [];
+                    if (tags.length === 0)
+                        return <span className="text-muted-foreground italic text-sm">-</span>;
+                    return (
+                        <div className="flex flex-wrap gap-1">
+                            {tags.slice(0, 3).map((tag, i) => (
+                                <Badge key={i} variant="outline" className="text-xs">
+                                    {tag}
+                                </Badge>
+                            ))}
+                            {tags.length > 3 && (
+                                <span className="text-xs text-muted-foreground">
+                                    +{tags.length - 3}
+                                </span>
+                            )}
+                        </div>
+                    );
+                },
             },
-        },
-    ], [editingCell, editValue, project, user]);
+        ],
+        [editingCell, editValue, project, user]
+    );
 
     if (isProjectLoading) {
         return <div className="h-64 flex items-center justify-center">Loading project...</div>;
@@ -365,12 +470,19 @@ export default function ProjectDetail() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">{project.title}</h1>
-                    <p className="text-muted-foreground">{project.description || "Project management dashboard."}</p>
+                    <p className="text-muted-foreground">
+                        {project.description || "Project management dashboard."}
+                    </p>
                 </div>
                 <div className="flex items-center gap-2">
                     {isProjectOwner && (
                         <>
-                            <Button variant="outline" className="text-destructive hover:bg-destructive/10 border-destructive/50" onClick={() => setIsDeleteDialogOpen(true)} disabled={deleteProjectMutation.isPending}>
+                            <Button
+                                variant="outline"
+                                className="text-destructive hover:bg-destructive/10 border-destructive/50"
+                                onClick={() => setIsDeleteDialogOpen(true)}
+                                disabled={deleteProjectMutation.isPending}
+                            >
                                 Delete Project
                             </Button>
                             <Button variant="outline" onClick={() => setIsInviteModalOpen(true)}>
@@ -392,7 +504,13 @@ export default function ProjectDetail() {
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-lg font-medium">Tasks</h3>
                             <div className="flex items-center gap-2">
-                                <Select value={filterAssignee || "__all__"} onValueChange={(v) => { setFilterAssignee(v === "__all__" ? "" : v); setPage(1); }}>
+                                <Select
+                                    value={filterAssignee || "__all__"}
+                                    onValueChange={(v) => {
+                                        setFilterAssignee(v === "__all__" ? "" : v);
+                                        setPage(1);
+                                    }}
+                                >
                                     <SelectTrigger className="h-8 w-32 text-xs">
                                         <SelectValue placeholder="All Assignees" />
                                     </SelectTrigger>
@@ -408,13 +526,18 @@ export default function ProjectDetail() {
                                 <Input
                                     placeholder="Filter by tag..."
                                     value={filterTag}
-                                    onChange={(e) => { setFilterTag(e.target.value); setPage(1); }}
+                                    onChange={(e) => {
+                                        setFilterTag(e.target.value);
+                                        setPage(1);
+                                    }}
                                     className="h-8 w-28 text-xs"
                                 />
                             </div>
                         </div>
                         {isTasksLoading ? (
-                            <div className="h-24 flex items-center justify-center">Loading tasks...</div>
+                            <div className="h-24 flex items-center justify-center">
+                                Loading tasks...
+                            </div>
                         ) : (
                             <div className="space-y-4">
                                 <DataTable
@@ -452,7 +575,7 @@ export default function ProjectDetail() {
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            onClick={() => setPage(p => Math.max(1, p - 1))}
+                                            onClick={() => setPage((p) => Math.max(1, p - 1))}
                                             disabled={page === 1}
                                         >
                                             Previous
@@ -460,7 +583,11 @@ export default function ProjectDetail() {
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            onClick={() => setPage(p => Math.min(tasks?.meta?.totalPages || 1, p + 1))}
+                                            onClick={() =>
+                                                setPage((p) =>
+                                                    Math.min(tasks?.meta?.totalPages || 1, p + 1)
+                                                )
+                                            }
                                             disabled={page === (tasks?.meta?.totalPages || 1)}
                                         >
                                             Next
@@ -477,18 +604,31 @@ export default function ProjectDetail() {
                         <h3 className="text-lg font-medium mb-4">Members</h3>
                         <div className="space-y-3">
                             {project.members?.map((member) => {
-                                const isMemberOwner = (member._id || member) === (project.ownerId?._id || project.ownerId);
+                                const isMemberOwner =
+                                    (member._id || member) ===
+                                    (project.ownerId?._id || project.ownerId);
                                 return (
-                                    <div key={member._id || member} className="flex items-center gap-2">
+                                    <div
+                                        key={member._id || member}
+                                        className="flex items-center gap-2"
+                                    >
                                         <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
-                                            {(member.name || member.email || "?").substring(0, 2).toUpperCase()}
+                                            {(member.name || member.email || "?")
+                                                .substring(0, 2)
+                                                .toUpperCase()}
                                         </div>
                                         <div className="flex flex-col">
                                             <span className="text-sm font-medium flex items-center gap-2">
                                                 {member.name || "No Name"}
-                                                {isMemberOwner && <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded">Owner</span>}
+                                                {isMemberOwner && (
+                                                    <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded">
+                                                        Owner
+                                                    </span>
+                                                )}
                                             </span>
-                                            <span className="text-xs text-muted-foreground">{member.email}</span>
+                                            <span className="text-xs text-muted-foreground">
+                                                {member.email}
+                                            </span>
                                         </div>
                                     </div>
                                 );
@@ -515,8 +655,8 @@ export default function ProjectDetail() {
                     <AlertDialogHeader>
                         <AlertDialogTitle>Delete Project</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to delete this project? This action cannot be undone.
-                            All tasks associated with this project will also be deleted.
+                            Are you sure you want to delete this project? This action cannot be
+                            undone. All tasks associated with this project will also be deleted.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

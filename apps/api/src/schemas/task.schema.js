@@ -7,6 +7,11 @@ export const createTaskSchema = {
         projectId: { type: "string", pattern: "^[0-9a-fA-F]{24}$" },
         assigneeId: { type: "string", pattern: "^[0-9a-fA-F]{24}$" },
         priority: { type: "string", enum: ["Low", "Medium", "High"], default: "Medium" },
+        tags: {
+            type: "array",
+            items: { type: "string", maxLength: 30 },
+            maxItems: 10,
+        },
     },
     additionalProperties: false,
 };

@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { logger } from "../../utils/logger.js";
 
 const projectSchema = new mongoose.Schema(
     {
@@ -33,13 +32,10 @@ export async function createProject(data) {
     return Project.create(data);
 }
 
-export async function findProjectsByUserId(userId, {
-    skip = 0,
-    limit = 10,
-    search = "",
-    sortBy = "createdAt",
-    sortOrder = "desc"
-} = {}) {
+export async function findProjectsByUserId(
+    userId,
+    { skip = 0, limit = 10, search = "", sortBy = "createdAt", sortOrder = "desc" } = {}
+) {
     // Base query: User must be owner OR member
     const baseQuery = { $or: [{ ownerId: userId }, { members: userId }] };
 
@@ -53,10 +49,10 @@ export async function findProjectsByUserId(userId, {
                 {
                     $or: [
                         { title: { $regex: search, $options: "i" } },
-                        { description: { $regex: search, $options: "i" } }
-                    ]
-                }
-            ]
+                        { description: { $regex: search, $options: "i" } },
+                    ],
+                },
+            ],
         };
     }
 
@@ -70,24 +66,18 @@ export async function findProjectsByUserId(userId, {
             .skip(skip)
             .limit(limit)
             .populate("ownerId", "email name"),
-        Project.countDocuments(finalQuery)
+        Project.countDocuments(finalQuery),
     ]);
 
     return { data, total };
 }
 
 export async function findProjectById(id) {
-    return Project.findById(id)
-        .populate("ownerId", "email name")
-        .populate("members", "email name");
+    return Project.findById(id).populate("ownerId", "email name").populate("members", "email name");
 }
 
 export async function updateProject(id, userId, data) {
-    return Project.findOneAndUpdate(
-        { _id: id, ownerId: userId },
-        { $set: data },
-        { new: true }
-    );
+    return Project.findOneAndUpdate({ _id: id, ownerId: userId }, { $set: data }, { new: true });
 }
 
 export async function deleteProject(id, userId) {
@@ -95,9 +85,5 @@ export async function deleteProject(id, userId) {
 }
 
 export async function addMemberToProject(id, memberId) {
-    return Project.findByIdAndUpdate(
-        id,
-        { $addToSet: { members: memberId } },
-        { new: true }
-    );
+    return Project.findByIdAndUpdate(id, { $addToSet: { members: memberId } }, { new: true });
 }

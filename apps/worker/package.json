@@ -13,6 +13,7 @@
         "dotenv": "^17.2.3",
         "ioredis": "^5.9.2",
         "mongoose": "^9.1.4",
+        "node-cron": "^4.2.1",
         "pino": "^10.2.1"
     },
     "devDependencies": {

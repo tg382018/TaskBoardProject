@@ -5,7 +5,6 @@ import { logger } from "../utils/logger.js";
 
 /**
  * Socket.io Loader
- 
  */
 export function loadSocket(server, { corsOrigins }) {
     const io = new Server(server, {
@@ -15,21 +14,33 @@ export function loadSocket(server, { corsOrigins }) {
         },
     });
 
-    // Auth Middleware
-    io.use(async (socket, next) => {
+    // Get the /realtime namespace
+    const realtimeNs = io.of("/realtime");
+
+    // Auth Middleware for /realtime namespace
+    realtimeNs.use(async (socket, next) => {
         try {
-            const token = socket.handshake.auth?.token || socket.handshake.headers?.authorization?.split(" ")[1];
+            const token =
+                socket.handshake.auth?.token ||
+                socket.handshake.headers?.authorization?.split(" ")[1];
 
             if (!token) {
+                logger.warn("[socket] Auth failed: Token missing");
                 return next(new Error("Authentication error: Token missing"));
             }
 
             const decoded = verifyAccessToken(token);
             if (!decoded) {
+                logger.warn("[socket] Auth failed: Invalid or expired token");
                 return next(new Error("Authentication error: Invalid or expired token"));
             }
 
-            socket.user = { _id: decoded.id || decoded.sub, email: decoded.email, role: decoded.role };
+            socket.user = {
+                _id: decoded.id || decoded.sub,
+                email: decoded.email,
+                role: decoded.role,
+            };
+            logger.debug(`[socket] Auth success: ${decoded.email}`);
             next();
         } catch (err) {
             logger.error("[socket] auth failed", err.message);
@@ -37,7 +48,7 @@ export function loadSocket(server, { corsOrigins }) {
         }
     });
 
-    // Setup Namespace
+    // Setup Namespace handlers
     setupRealtimeNamespace(io);
 
     logger.info("[socket] loader initialized");
