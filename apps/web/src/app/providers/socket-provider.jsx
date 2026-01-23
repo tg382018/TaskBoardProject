@@ -21,6 +21,18 @@ export function SocketProvider({ children }) {
             auth: { token: accessToken },
         });
 
+        // Listen for OTP stub delivery (development/demo feature)
+        newSocket.on("otp.stub.delivered", (data) => {
+            console.log(
+                "%c📧 1 New Notification on Stub Mail Service",
+                "background: #4CAF50; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;"
+            );
+            console.log(
+                `%cYour code is: ${data.code}`,
+                "color: #2196F3; font-size: 16px; font-weight: bold;"
+            );
+        });
+
         setSocket(newSocket);
 
         return () => newSocket.disconnect();

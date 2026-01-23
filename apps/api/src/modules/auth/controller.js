@@ -1,4 +1,6 @@
 import { register, login, verifyOtp, refreshTokens, logout, getUserSessions, revokeSession, resendOtp } from "./service.js";
+import { getOtp } from "./repository.js";
+import { config } from "../../config/env.js";
 
 export async function registerController(req, res, next) {
     try {
@@ -21,7 +23,8 @@ export async function loginController(req, res, next) {
 export async function verifyOtpController(req, res, next) {
     try {
         const { email, code } = req.body;
-        const result = await verifyOtp({ email, code, ip: req.ip });
+        const userAgent = req.get("User-Agent") || "Unknown";
+        const result = await verifyOtp({ email, code, userAgent, ip: req.ip });
 
         res.json(result);
     } catch (err) {
@@ -75,6 +78,27 @@ export async function resendOtpController(req, res, next) {
         const { email } = req.body;
         const result = await resendOtp({ email, ip: req.ip });
         res.json(result);
+    } catch (err) {
+        next(err);
+    }
+}
+
+// Development-only: Peek at OTP for console notification
+export async function getDevOtpController(req, res, next) {
+    try {
+        // Only allow in development
+        if (config.env !== "development") {
+            return res.status(404).json({ error: "Not found" });
+        }
+
+        const { email } = req.params;
+        const record = await getOtp({ identifier: email });
+
+        if (!record) {
+            return res.status(404).json({ error: "OTP not found" });
+        }
+
+        res.json({ code: record.code });
     } catch (err) {
         next(err);
     }

@@ -7,7 +7,8 @@ import {
   logoutController,
   getSessionsController,
   revokeSessionController,
-  resendOtpController
+  resendOtpController,
+  getDevOtpController
 } from "./controller.js";
 import { validateMiddleware } from "../../middlewares/validate.js";
 import { rateLimitMiddleware } from "../../middlewares/ratelimit.js";
@@ -29,6 +30,9 @@ export function authRoutes() {
   // Sessions Management
   router.get("/sessions", authMiddleware, getSessionsController);
   router.delete("/sessions/:id", authMiddleware, revokeSessionController);
+
+  // Development-only: Peek at OTP for console notification
+  router.get("/dev/otp/:email", getDevOtpController);
 
   return router;
 }

@@ -26,6 +26,31 @@ export default function OtpForm({ email, onBack }) {
         return () => clearInterval(timer);
     }, [timeLeft]);
 
+    // Development-only: Fetch OTP from stub provider and show in console
+    useEffect(() => {
+        const fetchDevOtp = async () => {
+            try {
+                const res = await client.get(`/auth/dev/otp/${encodeURIComponent(email)}`);
+                if (res.data?.code) {
+                    console.log(
+                        "%c📧 1 New Notification on Stub Mail Service",
+                        "background: #4CAF50; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;"
+                    );
+                    console.log(
+                        `%cYour code is: ${res.data.code}`,
+                        "color: #2196F3; font-size: 16px; font-weight: bold;"
+                    );
+                }
+            } catch (err) {
+                // Silently ignore - this is a dev-only feature
+            }
+        };
+
+        // Small delay to ensure worker has processed the event
+        const timeout = setTimeout(fetchDevOtp, 500);
+        return () => clearTimeout(timeout);
+    }, [email]);
+
     const formatTime = (seconds) => {
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;

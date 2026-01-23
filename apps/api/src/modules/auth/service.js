@@ -1,6 +1,5 @@
-import { randomInt } from "crypto";
 import {
-  saveOtp, getOtp, deleteOtp, incrementAttempts,
+  getOtp, deleteOtp, incrementAttempts,
   createSession, findSessionByToken, deleteSession,
   getSessionsByUser, deleteSessionById
 } from "./repository.js";
@@ -12,21 +11,14 @@ import bcrypt from "bcrypt";
 const OTP_TTL_SECONDS = 5 * 60;
 const MAX_ATTEMPTS = 5;
 
-function generateOtpCode() {
-  return String(randomInt(100000, 1000000)); // 6 haneli, kriptografik güvenli
-}
-
-async function sendOtp(email, ip) {
-  const code = generateOtpCode();
-  await saveOtp({
-    identifier: email,
-    code,
-    ttlSeconds: OTP_TTL_SECONDS,
-  });
+/**
+ * Requests OTP generation via Worker (StubAuthProvider)
+ * OTP is generated and stored in Redis by the Worker
+ */
+async function requestOtp(email, ip) {
   await publishOtpRequested({
     channel: "email",
     to: email,
-    code,
     requestedFromIp: ip,
   });
 }
@@ -76,7 +68,7 @@ export async function login({ email, password, ip }) {
     throw new Error("Please verify your account first");
   }
 
-  await sendOtp(email, ip);
+  await requestOtp(email, ip);
   return { ok: true, message: "OTP sent for login verification" };
 }
 
@@ -94,11 +86,11 @@ export async function resendOtp({ email, ip }) {
   // Eğer kullanıcı varsa ama verify olmamışsa (register aşamasında) -> Gönder
   // Eğer kullanıcı verify olmuşsa (login aşamasında) -> Gönder
 
-  await sendOtp(email, ip);
+  await requestOtp(email, ip);
   return { ok: true, message: "OTP resent successfully" };
 }
 
-export async function verifyOtp({ email, code }) {
+export async function verifyOtp({ email, code, userAgent, ip }) {
   if (!email || !code) throw new Error("email and code are required");
 
   const record = await getOtp({ identifier: email });
@@ -133,6 +125,8 @@ export async function verifyOtp({ email, code }) {
   await createSession({
     userId: user._id,
     refreshToken,
+    userAgent,
+    ip,
     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 gün
   });
 

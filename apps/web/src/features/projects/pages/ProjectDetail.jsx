@@ -7,7 +7,7 @@ import { DataTable } from "@/components/common/data-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { UserPlus, Plus, ChevronLeft, Check, X } from "lucide-react";
+import { UserPlus, Plus, ChevronLeft, Check, X, Pencil } from "lucide-react";
 import { MemberInviteModal } from "../components/MemberInviteModal";
 import { CreateTaskModal } from "../../tasks/components/CreateTaskModal";
 import {
@@ -49,7 +49,7 @@ export default function ProjectDetail() {
 
     // Server-side search and filters
     const [searchInput, setSearchInput] = useState("");
-    const debouncedSearch = useDebouncedValue(searchInput, 300);
+    const debouncedSearch = useDebouncedValue(searchInput, 500);
     const [filterAssignee, setFilterAssignee] = useState("");
     const [filterTag, setFilterTag] = useState("");
 
@@ -189,7 +189,7 @@ export default function ProjectDetail() {
                 }
 
                 return (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 group">
                         <Link to={`/tasks/${task._id}`} className="font-medium hover:underline">
                             {task.title}
                         </Link>
@@ -197,10 +197,11 @@ export default function ProjectDetail() {
                             <Button
                                 size="icon"
                                 variant="ghost"
-                                className="h-5 w-5 opacity-0 group-hover:opacity-100"
+                                className="h-6 w-6 text-muted-foreground opacity-50 hover:opacity-100"
                                 onClick={() => startEditing(task._id, "title", task.title)}
+                                title="Edit task title"
                             >
-                                ✏️
+                                <Pencil className="h-3 w-3" />
                             </Button>
                         )}
                     </div>
@@ -248,10 +249,13 @@ export default function ProjectDetail() {
                 };
                 return (
                     <div
-                        className={editable ? "cursor-pointer" : ""}
+                        className={`flex items-center gap-2 ${editable ? "cursor-pointer group" : ""}`}
                         onClick={() => editable && startEditing(task._id, "status", status)}
                     >
                         <Badge variant={variants[status] || "secondary"}>{status}</Badge>
+                        {editable && (
+                            <Pencil className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                        )}
                     </div>
                 );
             },

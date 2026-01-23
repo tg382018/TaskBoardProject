@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { logger } from "../../utils/logger.js";
 
 const projectSchema = new mongoose.Schema(
     {
@@ -71,9 +72,6 @@ export async function findProjectsByUserId(userId, {
             .populate("ownerId", "email name"),
         Project.countDocuments(finalQuery)
     ]);
-
-    // Debug logging
-    console.log("[DEBUG] findProjectsByUserId", { search, finalQuery: JSON.stringify(finalQuery), total, dataCount: data.length });
 
     return { data, total };
 }
