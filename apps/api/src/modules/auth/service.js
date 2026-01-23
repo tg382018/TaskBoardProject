@@ -1,7 +1,8 @@
 import { randomInt } from "crypto";
 import {
   saveOtp, getOtp, deleteOtp, incrementAttempts,
-  createSession, findSessionByToken, deleteSession
+  createSession, findSessionByToken, deleteSession,
+  getSessionsByUser, deleteSessionById
 } from "./repository.js";
 import { findOrCreateUser, findUserByEmail, User } from "../users/repository.js";
 import { publishOtpRequested } from "./events.js";
@@ -46,13 +47,13 @@ export async function register({ email, password, name, ip }) {
       email,
       password: hashedPassword,
       name,
-      isVerified: false
+      isVerified: true // Hemen doğrulanmış sayıyoruz ki login flow'a geçebilsin
     });
   } else {
     // Shadow user güncelleme
     user.password = hashedPassword;
     user.name = name;
-    user.isVerified = false;
+    user.isVerified = true;
     await user.save();
   }
 
@@ -148,4 +149,12 @@ export async function refreshTokens({ refreshToken }) {
 export async function logout({ refreshToken }) {
   if (!refreshToken) return;
   await deleteSession({ refreshToken });
+}
+
+export async function getUserSessions({ userId }) {
+  return getSessionsByUser({ userId });
+}
+
+export async function revokeSession({ id, userId }) {
+  return deleteSessionById({ id, userId });
 }

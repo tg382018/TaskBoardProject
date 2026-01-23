@@ -21,6 +21,15 @@ export async function listTasksController(req, res, next) {
     }
 }
 
+export async function getTaskController(req, res, next) {
+    try {
+        const task = await service.getTaskById(req.user._id, req.params.id);
+        res.json(task);
+    } catch (err) {
+        next(err);
+    }
+}
+
 export async function updateTaskController(req, res, next) {
     try {
         const task = await service.updateExistingTask(req.params.id, req.user._id, req.body);

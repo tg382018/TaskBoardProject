@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
     createTaskController,
     listTasksController,
+    getTaskController,
     updateTaskController,
     deleteTaskController
 } from "./controller.js";
@@ -16,6 +17,7 @@ export function tasksRoutes() {
 
     router.post("/", validateMiddleware(createTaskSchema), createTaskController);
     router.get("/", listTasksController);
+    router.get("/:id", getTaskController);
     router.patch("/:id", validateMiddleware(updateTaskSchema), updateTaskController);
     router.delete("/:id", deleteTaskController);
 

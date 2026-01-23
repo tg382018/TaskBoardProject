@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import client from "@/api/client";
 import { Button } from "@/components/ui/button";
@@ -63,6 +64,13 @@ export default function LoginPage() {
                     {loginMutation.isPending ? "Sending OTP..." : "Continue with Password"}
                 </Button>
             </form>
+
+            <div className="text-center text-sm">
+                <span className="text-muted-foreground mr-1">Don't have an account?</span>
+                <Link to="/register" className="text-primary hover:underline font-medium">
+                    Sign up
+                </Link>
+            </div>
 
             <div className="text-center text-xs text-muted-foreground">
                 <span className="bg-card px-2">Powered by TaskBoard</span>

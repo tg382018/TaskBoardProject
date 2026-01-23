@@ -25,7 +25,11 @@ export function loadSocket(server, { corsOrigins }) {
             }
 
             const decoded = verifyAccessToken(token);
-            socket.user = { _id: decoded.sub, email: decoded.email, role: decoded.role };
+            if (!decoded) {
+                return next(new Error("Authentication error: Invalid or expired token"));
+            }
+
+            socket.user = { _id: decoded.id || decoded.sub, email: decoded.email, role: decoded.role };
             next();
         } catch (err) {
             logger.error("[socket] auth failed", err.message);

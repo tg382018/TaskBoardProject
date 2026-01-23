@@ -6,7 +6,8 @@
     "scripts": {
         "dev": "vite",
         "build": "vite build",
-        "preview": "vite preview"
+        "preview": "vite preview",
+        "test": "vitest run"
     },
     "dependencies": {
         "@radix-ui/react-avatar": "^1.1.11",
@@ -34,10 +35,15 @@
         "zustand": "^5.0.3"
     },
     "devDependencies": {
-        "@vitejs/plugin-react": "^4.3.4",
+        "@testing-library/jest-dom": "^6.9.1",
+        "@testing-library/react": "^16.3.2",
+        "@testing-library/user-event": "^14.6.1",
+        "@vitejs/plugin-react": "^4.7.0",
         "autoprefixer": "^10.4.20",
+        "jsdom": "^27.4.0",
         "postcss": "^8.5.1",
         "tailwindcss": "^3.4.17",
-        "vite": "^6.0.7"
+        "vite": "^6.0.7",
+        "vitest": "^4.0.18"
     }
 }

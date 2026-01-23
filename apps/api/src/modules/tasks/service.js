@@ -48,6 +48,18 @@ export async function getProjectTasks(userId, projectId) {
     return repository.findTasksByProjectId(projectId);
 }
 
+export async function getTaskById(userId, taskId) {
+    const task = await repository.findTaskById(taskId);
+    if (!task) throw new Error("Task not found");
+
+    const project = await findProjectById(task.projectId);
+    if (!project.members.includes(userId) && String(project.ownerId) !== String(userId)) {
+        throw new Error("Unauthorized");
+    }
+
+    return task;
+}
+
 export async function updateExistingTask(id, userId, data) {
     const task = await repository.findTaskById(id);
     if (!task) throw new Error("Task not found");

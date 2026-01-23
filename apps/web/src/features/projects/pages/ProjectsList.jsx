@@ -1,11 +1,13 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import client from "@/api/client";
+import { projectsApi } from "../api/projects.api";
 import { DataTable } from "@/components/common/data-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
+import { CreateProjectModal } from "../components/CreateProjectModal";
 
 const columns = [
     {
@@ -13,15 +15,19 @@ const columns = [
         header: "Project Name",
         cell: ({ row }) => {
             return (
-                <Link to={`/projects/${row.original._id}`} className="font-medium hover:underline">
+                <Link
+                    to={`/projects/${row.original._id}`}
+                    className="font-medium hover:underline text-primary"
+                >
                     {row.getValue("title")}
                 </Link>
-            )
-        }
+            );
+        },
     },
     {
         accessorKey: "description",
         header: "Description",
+        cell: ({ row }) => row.getValue("description") || <span className="text-muted-foreground italic">No description</span>
     },
     {
         accessorKey: "createdAt",
@@ -40,12 +46,11 @@ const columns = [
 ];
 
 export default function ProjectsList() {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
     const { data: projects, isLoading } = useQuery({
         queryKey: ["projects"],
-        queryFn: async () => {
-            const res = await client.get("/projects");
-            return res.data;
-        },
+        queryFn: projectsApi.getAll,
     });
 
     return (
@@ -57,7 +62,7 @@ export default function ProjectsList() {
                         Manage your teams and group your tasks.
                     </p>
                 </div>
-                <Button>
+                <Button onClick={() => setIsModalOpen(true)}>
                     <Plus className="w-4 h-4 mr-2" />
                     New Project
                 </Button>
@@ -65,7 +70,9 @@ export default function ProjectsList() {
 
             <div className="bg-card rounded-lg border shadow-sm">
                 {isLoading ? (
-                    <div className="h-24 flex items-center justify-center">Loading projects...</div>
+                    <div className="h-64 flex items-center justify-center">
+                        <span className="text-muted-foreground animate-pulse">Loading projects...</span>
+                    </div>
                 ) : (
                     <div className="p-4">
                         <DataTable
@@ -76,6 +83,11 @@ export default function ProjectsList() {
                     </div>
                 )}
             </div>
+
+            <CreateProjectModal
+                open={isModalOpen}
+                onOpenChange={setIsModalOpen}
+            />
         </div>
     );
 }

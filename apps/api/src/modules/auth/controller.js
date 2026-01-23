@@ -1,4 +1,4 @@
-import { register, login, verifyOtp, refreshTokens, logout } from "./service.js";
+import { register, login, verifyOtp, refreshTokens, logout, getUserSessions, revokeSession } from "./service.js";
 
 export async function registerController(req, res, next) {
     try {
@@ -43,6 +43,27 @@ export async function logoutController(req, res, next) {
     try {
         const { refreshToken } = req.body;
         await logout({ refreshToken });
+        res.json({ ok: true });
+    } catch (err) {
+        next(err);
+    }
+}
+
+export async function getSessionsController(req, res, next) {
+    try {
+        const userId = req.user._id;
+        const sessions = await getUserSessions({ userId });
+        res.json(sessions);
+    } catch (err) {
+        next(err);
+    }
+}
+
+export async function revokeSessionController(req, res, next) {
+    try {
+        const userId = req.user._id;
+        const { id } = req.params;
+        await revokeSession({ id, userId });
         res.json({ ok: true });
     } catch (err) {
         next(err);

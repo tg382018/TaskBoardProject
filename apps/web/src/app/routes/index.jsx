@@ -3,6 +3,11 @@ import { useAuthStore } from "@/store/auth.store";
 import AuthLayout from "@/layouts/auth-layout";
 import AppLayout from "@/layouts/app-layout";
 import LoginPage from "@/features/auth/pages/Login";
+import RegisterPage from "@/features/auth/pages/Register";
+import ProjectsList from "@/features/projects/pages/ProjectsList";
+import ProjectDetail from "@/features/projects/pages/ProjectDetail";
+import TaskDetail from "@/features/tasks/pages/TaskDetail";
+import ProfilePage from "@/features/profile/pages/Profile";
 
 // Placeholder for Dashboard (Part of Auth Core verification)
 const Dashboard = () => (
@@ -27,11 +32,15 @@ export default function AppRoutes() {
         <Routes>
             <Route element={<PublicRoute />}>
                 <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
             </Route>
 
             <Route element={<ProtectedRoute />}>
                 <Route path="/" element={<Dashboard />} />
-                {/* Other features will follow in B4 */}
+                <Route path="/projects" element={<ProjectsList />} />
+                <Route path="/projects/:id" element={<ProjectDetail />} />
+                <Route path="/tasks/:id" element={<TaskDetail />} />
+                <Route path="/profile" element={<ProfilePage />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />

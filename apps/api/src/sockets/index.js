@@ -9,6 +9,11 @@ export function setupRealtimeNamespace(io) {
     const realtime = io.of("/realtime");
 
     realtime.on("connection", (socket) => {
+        if (!socket.user) {
+            logger.warn(`[socket] connection without user, disconnecting ${socket.id}`);
+            return socket.disconnect();
+        }
+
         logger.info(`[socket] user connected: ${socket.user.email} (${socket.id})`);
 
         // Join global user room for private notifications
@@ -26,7 +31,9 @@ export function setupRealtimeNamespace(io) {
         });
 
         socket.on("disconnect", () => {
-            logger.info(`[socket] user disconnected: ${socket.user.email}`);
+            if (socket.user) {
+                logger.info(`[socket] user disconnected: ${socket.user.email}`);
+            }
         });
     });
 

@@ -95,6 +95,14 @@ export async function deleteSession({ refreshToken }) {
   return Session.deleteOne({ refreshToken });
 }
 
+export async function getSessionsByUser({ userId }) {
+  return Session.find({ userId }).sort({ createdAt: -1 });
+}
+
+export async function deleteSessionById({ id, userId }) {
+  return Session.deleteOne({ _id: id, userId });
+}
+
 export async function deleteUserSessions({ userId }) {
   return Session.deleteMany({ userId });
 }

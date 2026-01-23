@@ -16,8 +16,9 @@ export default function AppLayout() {
                             <span className="inline-block font-bold">TaskBoard</span>
                         </Link>
                         <nav className="flex gap-6 text-sm font-medium">
-                            <Link to="/" className="transition-colors hover:text-foreground/80 text-foreground">Dashboard</Link>
+                            <Link to="/" className="transition-colors hover:text-foreground/80 text-foreground/60">Dashboard</Link>
                             <Link to="/projects" className="transition-colors hover:text-foreground/80 text-foreground/60">Projects</Link>
+                            <Link to="/profile" className="transition-colors hover:text-foreground/80 text-foreground/60">Profile</Link>
                         </nav>
                     </div>
                     <div className="flex items-center gap-4">
