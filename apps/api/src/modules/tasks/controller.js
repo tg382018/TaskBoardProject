@@ -13,11 +13,20 @@ import { getPagination } from "../../utils/pagination.js";
 
 export async function listTasksController(req, res, next) {
     try {
-        const { projectId } = req.query;
+        const { projectId, search, assigneeId, tag, sortBy, sortOrder } = req.query;
         if (!projectId) return res.status(400).json({ error: "projectId is required" });
 
         const { page, limit, skip } = getPagination(req.query);
-        const tasks = await service.getProjectTasks(req.user._id, projectId, { page, limit, skip });
+        const tasks = await service.getProjectTasks(req.user._id, projectId, {
+            page,
+            limit,
+            skip,
+            search: search || "",
+            assigneeId: assigneeId || null,
+            tag: tag || null,
+            sortBy: sortBy || "createdAt",
+            sortOrder: sortOrder || "desc"
+        });
         res.json(tasks);
     } catch (err) {
         next(err);

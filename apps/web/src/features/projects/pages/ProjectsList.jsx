@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { projectsApi } from "../api/projects.api";
 import { DataTable } from "@/components/common/data-table";
@@ -9,27 +9,61 @@ import { format } from "date-fns";
 import { Link } from "react-router-dom";
 import { CreateProjectModal } from "../components/CreateProjectModal";
 import { useAuthStore } from "@/store/auth.store";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 
 export default function ProjectsList() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const { user } = useAuthStore();
 
+    // Pagination
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(5);
 
+    // Server-side search
+    const [searchInput, setSearchInput] = useState("");
+    const debouncedSearch = useDebouncedValue(searchInput, 300);
+
+    // Server-side sorting
+    const [sortBy, setSortBy] = useState("createdAt");
+    const [sortOrder, setSortOrder] = useState("desc");
+
     const { data: response, isLoading } = useQuery({
-        queryKey: ["projects", page, limit],
-        queryFn: () => projectsApi.getAll({ page, limit }),
+        queryKey: ["projects", page, limit, debouncedSearch, sortBy, sortOrder],
+        queryFn: () => projectsApi.getAll({
+            page,
+            limit,
+            search: debouncedSearch,
+            sortBy,
+            sortOrder
+        }),
     });
 
     const projects = response?.data || [];
     const meta = response?.meta || {};
     const totalPages = meta.totalPages || 1;
 
+    const handleSearch = useCallback((value) => {
+        setSearchInput(value);
+        setPage(1); // Reset to first page on search
+    }, []);
+
+    const handleSort = useCallback((column, order) => {
+        if (column === null) {
+            setSortBy("createdAt");
+            setSortOrder("desc");
+        } else {
+            setSortBy(column);
+            setSortOrder(order);
+        }
+        setPage(1);
+    }, []);
+
     const columns = useMemo(() => [
         {
+            id: "title",
             accessorKey: "title",
             header: "Project Name",
+            enableSorting: false, // Title search is via the search box
             cell: ({ row }) => {
                 return (
                     <Link
@@ -42,13 +76,16 @@ export default function ProjectsList() {
             },
         },
         {
+            id: "description",
             accessorKey: "description",
             header: "Description",
+            enableSorting: false,
             cell: ({ row }) => row.getValue("description") || <span className="text-muted-foreground italic">No description</span>
         },
         {
             id: "source",
             header: "Source",
+            enableSorting: false,
             cell: ({ row }) => {
                 const owner = row.original.ownerId;
                 const isOwner = user?._id === (owner?._id || owner);
@@ -65,13 +102,16 @@ export default function ProjectsList() {
             }
         },
         {
+            id: "createdAt",
             accessorKey: "createdAt",
             header: "Created",
+            enableSorting: true,
             cell: ({ row }) => format(new Date(row.getValue("createdAt")), "MMM d, yyyy"),
         },
         {
             id: "members",
             header: "Members",
+            enableSorting: true,
             cell: ({ row }) => (
                 <Badge variant="secondary">
                     {row.original.members?.length || 0} members
@@ -105,7 +145,12 @@ export default function ProjectsList() {
                         <DataTable
                             columns={columns}
                             data={projects || []}
-                            searchKey="title"
+                            onSearch={handleSearch}
+                            searchValue={searchInput}
+                            onSort={handleSort}
+                            sortBy={sortBy}
+                            sortOrder={sortOrder}
+                            enableColumnVisibility={true}
                         />
 
                         <div className="flex items-center justify-between pt-4 border-t">

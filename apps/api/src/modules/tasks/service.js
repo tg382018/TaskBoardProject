@@ -45,7 +45,16 @@ export async function createNewTask(userId, data) {
     return task;
 }
 
-export async function getProjectTasks(userId, projectId, { page = 1, limit = 10, skip = 0 } = {}) {
+export async function getProjectTasks(userId, projectId, {
+    page = 1,
+    limit = 10,
+    skip = 0,
+    search = "",
+    assigneeId = null,
+    tag = null,
+    sortBy = "createdAt",
+    sortOrder = "desc"
+} = {}) {
     const project = await findProjectById(projectId);
     if (!project) throw new Error("Project not found");
 
@@ -53,7 +62,15 @@ export async function getProjectTasks(userId, projectId, { page = 1, limit = 10,
         throw new Error("Unauthorized");
     }
 
-    const { data, total } = await repository.findTasksByProjectId(projectId, { skip, limit });
+    const { data, total } = await repository.findTasksByProjectId(projectId, {
+        skip,
+        limit,
+        search,
+        assigneeId,
+        tag,
+        sortBy,
+        sortOrder
+    });
 
     return {
         data,

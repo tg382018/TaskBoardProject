@@ -20,6 +20,16 @@ import { ChevronLeft, Send, Clock, User as UserIcon, UserPlus } from "lucide-rea
 import { format } from "date-fns";
 import { useSocketEvent } from "@/hooks/use-socket-event";
 import { useSocket } from "@/app/providers/socket-provider";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function TaskDetail() {
     const { id } = useParams();
@@ -28,6 +38,7 @@ export default function TaskDetail() {
     const navigate = useNavigate();
     const { user } = useAuthStore();
     const [comment, setComment] = useState("");
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
     const { data: task, isLoading, isError, error } = useQuery({
         queryKey: ["task", id],
@@ -89,9 +100,7 @@ export default function TaskDetail() {
     });
 
     const handleDeleteTask = () => {
-        if (window.confirm("Are you sure you want to delete this task? This action cannot be undone.")) {
-            deleteTaskMutation.mutate();
-        }
+        deleteTaskMutation.mutate();
     };
 
     if (isLoading) return <div className="p-8 text-center">Loading task...</div>;
@@ -136,12 +145,32 @@ export default function TaskDetail() {
                         variant="outline"
                         size="sm"
                         className="text-destructive hover:bg-destructive/10 border-destructive/50"
-                        onClick={handleDeleteTask}
+                        onClick={() => setIsDeleteDialogOpen(true)}
                         disabled={deleteTaskMutation.isPending}
                     >
                         Delete Task
                     </Button>
                 )}
+
+                <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Task</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Are you sure you want to delete this task? This action cannot be undone.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                onClick={handleDeleteTask}
+                            >
+                                Delete
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

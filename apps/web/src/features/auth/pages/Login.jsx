@@ -68,7 +68,7 @@ export default function LoginPage() {
                 </div>
 
                 <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
-                    {loginMutation.isPending ? "Sending OTP..." : "Continue with Password"}
+                    {loginMutation.isPending ? "Sending OTP..." : "Continue"}
                 </Button>
             </form>
 

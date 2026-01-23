@@ -35,6 +35,11 @@ const taskSchema = new mongoose.Schema(
             ref: "User",
             required: true,
         },
+        tags: [{
+            type: String,
+            trim: true,
+            maxlength: 30,
+        }],
     },
     { timestamps: true }
 );
@@ -45,13 +50,45 @@ export async function createTask(data) {
     return Task.create(data);
 }
 
-export async function findTasksByProjectId(projectId, { skip = 0, limit = 10 } = {}) {
+export async function findTasksByProjectId(projectId, {
+    skip = 0,
+    limit = 10,
+    search = "",
+    assigneeId = null,
+    tag = null,
+    sortBy = "createdAt",
+    sortOrder = "desc"
+} = {}) {
     const query = { projectId };
+
+    // Server-side search (title and tags)
+    if (search) {
+        query.$or = [
+            { title: { $regex: search, $options: "i" } },
+            { tags: { $regex: search, $options: "i" } }
+        ];
+    }
+
+    // Filter by assignee
+    if (assigneeId) {
+        query.assigneeId = assigneeId;
+    }
+
+    // Filter by tag
+    if (tag) {
+        query.tags = { $regex: tag, $options: "i" };
+    }
+
+    // Dynamic sorting
+    const sortOptions = {};
+    sortOptions[sortBy] = sortOrder === "asc" ? 1 : -1;
+
     const [data, total] = await Promise.all([
         Task.find(query)
-            .sort({ createdAt: -1 })
+            .sort(sortOptions)
             .skip(skip)
-            .limit(limit),
+            .limit(limit)
+            .populate("assigneeId", "email name"),
         Task.countDocuments(query)
     ]);
     return { data, total };

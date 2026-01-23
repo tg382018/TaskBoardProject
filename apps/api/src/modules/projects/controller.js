@@ -18,8 +18,16 @@ import { getPagination } from "../../utils/pagination.js";
 
 export async function listProjectsController(req, res, next) {
     try {
+        const { search, sortBy, sortOrder } = req.query;
         const { page, limit, skip } = getPagination(req.query);
-        const projects = await service.getMyProjects(req.user._id, { page, limit, skip });
+        const projects = await service.getMyProjects(req.user._id, {
+            page,
+            limit,
+            skip,
+            search: search || "",
+            sortBy: sortBy || "createdAt",
+            sortOrder: sortOrder || "desc"
+        });
         res.json(projects);
     } catch (err) {
         next(err);

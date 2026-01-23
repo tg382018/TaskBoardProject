@@ -57,8 +57,8 @@ export async function register({ email, password, name, ip }) {
     await user.save();
   }
 
-  await sendOtp(email, ip);
-  return { ok: true, message: "OTP sent to email" };
+  // Kayıt tamamlandı - OTP sadece login'de gönderilecek
+  return { ok: true, message: "Registration successful. Please login." };
 }
 
 export async function login({ email, password, ip }) {

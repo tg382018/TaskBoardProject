@@ -10,8 +10,21 @@ export async function createNewProject({ title, description, ownerId }) {
     });
 }
 
-export async function getMyProjects(userId, { page = 1, limit = 10, skip = 0 } = {}) {
-    const { data, total } = await repository.findProjectsByUserId(userId, { skip, limit });
+export async function getMyProjects(userId, {
+    page = 1,
+    limit = 10,
+    skip = 0,
+    search = "",
+    sortBy = "createdAt",
+    sortOrder = "desc"
+} = {}) {
+    const { data, total } = await repository.findProjectsByUserId(userId, {
+        skip,
+        limit,
+        search,
+        sortBy,
+        sortOrder
+    });
 
     return {
         data,
