@@ -55,6 +55,8 @@ export default function ProjectDetail() {
     const { user } = useAuthStore();
     const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
     const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+    const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(5);
 
     const { data: project, isLoading: isProjectLoading } = useQuery({
         queryKey: ["project", id],
@@ -62,8 +64,8 @@ export default function ProjectDetail() {
     });
 
     const { data: tasks, isLoading: isTasksLoading } = useQuery({
-        queryKey: ["project-tasks", id],
-        queryFn: () => tasksApi.getAll(id),
+        queryKey: ["project-tasks", id, page, limit],
+        queryFn: () => tasksApi.getAll(id, { page, limit }),
     });
 
     const navigate = useNavigate();
@@ -131,7 +133,49 @@ export default function ProjectDetail() {
                         {isTasksLoading ? (
                             <div className="h-24 flex items-center justify-center">Loading tasks...</div>
                         ) : (
-                            <DataTable columns={columns} data={tasks || []} searchKey="title" />
+                            <div className="space-y-4">
+                                <DataTable columns={columns} data={tasks?.data || []} searchKey="title" />
+
+                                <div className="flex items-center justify-between pt-4 border-t">
+                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                        <span>Per page:</span>
+                                        <select
+                                            className="h-8 w-16 rounded-md border border-input bg-background px-2 text-xs"
+                                            value={limit}
+                                            onChange={(e) => {
+                                                setLimit(Number(e.target.value));
+                                                setPage(1);
+                                            }}
+                                        >
+                                            <option value={5}>5</option>
+                                            <option value={10}>10</option>
+                                            <option value={15}>15</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm text-muted-foreground mr-2">
+                                            Page {page} of {tasks?.meta?.totalPages || 1}
+                                        </span>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setPage(p => Math.max(1, p - 1))}
+                                            disabled={page === 1}
+                                        >
+                                            Previous
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setPage(p => Math.min(tasks?.meta?.totalPages || 1, p + 1))}
+                                            disabled={page === (tasks?.meta?.totalPages || 1)}
+                                        >
+                                            Next
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
                         )}
                     </div>
                 </div>

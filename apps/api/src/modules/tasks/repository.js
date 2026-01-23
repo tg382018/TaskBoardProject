@@ -45,8 +45,16 @@ export async function createTask(data) {
     return Task.create(data);
 }
 
-export async function findTasksByProjectId(projectId) {
-    return Task.find({ projectId }).sort({ createdAt: -1 });
+export async function findTasksByProjectId(projectId, { skip = 0, limit = 10 } = {}) {
+    const query = { projectId };
+    const [data, total] = await Promise.all([
+        Task.find(query)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit),
+        Task.countDocuments(query)
+    ]);
+    return { data, total };
 }
 
 export async function findTaskById(id) {

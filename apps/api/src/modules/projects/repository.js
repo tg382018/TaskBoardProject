@@ -32,10 +32,19 @@ export async function createProject(data) {
     return Project.create(data);
 }
 
-export async function findProjectsByUserId(userId) {
-    return Project.find({
-        $or: [{ ownerId: userId }, { members: userId }],
-    }).sort({ createdAt: -1 }).populate("ownerId", "email name");
+export async function findProjectsByUserId(userId, { skip = 0, limit = 10 } = {}) {
+    const query = { $or: [{ ownerId: userId }, { members: userId }] };
+
+    const [data, total] = await Promise.all([
+        Project.find(query)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .populate("ownerId", "email name"),
+        Project.countDocuments(query)
+    ]);
+
+    return { data, total };
 }
 
 export async function findProjectById(id) {

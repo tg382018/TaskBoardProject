@@ -6,8 +6,10 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogDescription,
     DialogFooter,
 } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,17 +18,26 @@ export function CreateProjectModal({ open, onOpenChange }) {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const queryClient = useQueryClient();
+    const { toast } = useToast();
 
     const createMutation = useMutation({
         mutationFn: projectsApi.create,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["projects"] });
+            queryClient.invalidateQueries({ queryKey: ["projects"], refetchType: "all" });
             onOpenChange(false);
             setTitle("");
             setDescription("");
+            toast({
+                title: "Project created",
+                description: "Your new project has been created successfully.",
+            });
         },
         onError: (err) => {
-            alert(err.response?.data?.message || "Failed to create project");
+            toast({
+                variant: "destructive",
+                title: "Creation failed",
+                description: err.response?.data?.message || "Failed to create project",
+            });
         }
     });
 
@@ -40,6 +51,9 @@ export function CreateProjectModal({ open, onOpenChange }) {
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Create New Project</DialogTitle>
+                    <DialogDescription>
+                        Add a new project to your workspace.
+                    </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">

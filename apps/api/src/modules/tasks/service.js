@@ -45,7 +45,7 @@ export async function createNewTask(userId, data) {
     return task;
 }
 
-export async function getProjectTasks(userId, projectId) {
+export async function getProjectTasks(userId, projectId, { page = 1, limit = 10, skip = 0 } = {}) {
     const project = await findProjectById(projectId);
     if (!project) throw new Error("Project not found");
 
@@ -53,7 +53,17 @@ export async function getProjectTasks(userId, projectId) {
         throw new Error("Unauthorized");
     }
 
-    return repository.findTasksByProjectId(projectId);
+    const { data, total } = await repository.findTasksByProjectId(projectId, { skip, limit });
+
+    return {
+        data,
+        meta: {
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit)
+        }
+    };
 }
 
 export async function getTaskById(userId, taskId) {

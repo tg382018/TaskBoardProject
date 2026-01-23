@@ -9,12 +9,15 @@ export async function createTaskController(req, res, next) {
     }
 }
 
+import { getPagination } from "../../utils/pagination.js";
+
 export async function listTasksController(req, res, next) {
     try {
         const { projectId } = req.query;
         if (!projectId) return res.status(400).json({ error: "projectId is required" });
 
-        const tasks = await service.getProjectTasks(req.user._id, projectId);
+        const { page, limit, skip } = getPagination(req.query);
+        const tasks = await service.getProjectTasks(req.user._id, projectId, { page, limit, skip });
         res.json(tasks);
     } catch (err) {
         next(err);

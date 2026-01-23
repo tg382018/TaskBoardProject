@@ -14,10 +14,17 @@ export default function ProjectsList() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const { user } = useAuthStore();
 
-    const { data: projects, isLoading } = useQuery({
-        queryKey: ["projects"],
-        queryFn: projectsApi.getAll,
+    const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(5);
+
+    const { data: response, isLoading } = useQuery({
+        queryKey: ["projects", page, limit],
+        queryFn: () => projectsApi.getAll({ page, limit }),
     });
+
+    const projects = response?.data || [];
+    const meta = response?.meta || {};
+    const totalPages = meta.totalPages || 1;
 
     const columns = useMemo(() => [
         {
@@ -94,12 +101,52 @@ export default function ProjectsList() {
                         <span className="text-muted-foreground animate-pulse">Loading projects...</span>
                     </div>
                 ) : (
-                    <div className="p-4">
+                    <div className="p-4 space-y-4">
                         <DataTable
                             columns={columns}
                             data={projects || []}
                             searchKey="title"
                         />
+
+                        <div className="flex items-center justify-between pt-4 border-t">
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <span>Per page:</span>
+                                <select
+                                    className="h-8 w-16 rounded-md border border-input bg-background px-2 text-xs"
+                                    value={limit}
+                                    onChange={(e) => {
+                                        setLimit(Number(e.target.value));
+                                        setPage(1);
+                                    }}
+                                >
+                                    <option value={5}>5</option>
+                                    <option value={10}>10</option>
+                                    <option value={15}>15</option>
+                                </select>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm text-muted-foreground mr-2">
+                                    Page {page} of {totalPages}
+                                </span>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                                    disabled={page === 1}
+                                >
+                                    Previous
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                                    disabled={page === totalPages}
+                                >
+                                    Next
+                                </Button>
+                            </div>
+                        </div>
                     </div>
                 )}
             </div>

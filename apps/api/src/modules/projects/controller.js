@@ -14,9 +14,12 @@ export async function createProjectController(req, res, next) {
     }
 }
 
+import { getPagination } from "../../utils/pagination.js";
+
 export async function listProjectsController(req, res, next) {
     try {
-        const projects = await service.getMyProjects(req.user._id);
+        const { page, limit, skip } = getPagination(req.query);
+        const projects = await service.getMyProjects(req.user._id, { page, limit, skip });
         res.json(projects);
     } catch (err) {
         next(err);
