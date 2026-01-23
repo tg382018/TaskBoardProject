@@ -37,3 +37,12 @@ export const refreshSchema = {
     },
     additionalProperties: false,
 };
+
+export const resendOtpSchema = {
+    type: "object",
+    required: ["email"],
+    properties: {
+        email: { type: "string", format: "email" },
+    },
+    additionalProperties: false,
+};

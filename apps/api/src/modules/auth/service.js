@@ -80,6 +80,24 @@ export async function login({ email, password, ip }) {
   return { ok: true, message: "OTP sent for login verification" };
 }
 
+export async function resendOtp({ email, ip }) {
+  if (!email) throw new Error("Email is required");
+
+  // Kullanıcı kontrolü: Var olmayan bir email için OTP gönderilmeli mi?
+  // Güvenlik açısından (user enumeration) burada hata vermeyip "gönderildi" diyebiliriz
+  // Ancak basitlik ve UX için şimdilik kullanıcıyı kontrol ediyoruz.
+  const user = await findUserByEmail(email);
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  // Eğer kullanıcı varsa ama verify olmamışsa (register aşamasında) -> Gönder
+  // Eğer kullanıcı verify olmuşsa (login aşamasında) -> Gönder
+
+  await sendOtp(email, ip);
+  return { ok: true, message: "OTP resent successfully" };
+}
+
 export async function verifyOtp({ email, code }) {
   if (!email || !code) throw new Error("email and code are required");
 

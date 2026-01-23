@@ -4,6 +4,7 @@ import { profileApi } from "../api/profile.api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
     Table,
@@ -21,6 +22,8 @@ export default function ProfilePage() {
     const queryClient = useQueryClient();
     const [name, setName] = useState("");
 
+    const { toast } = useToast();
+
     const { data: profile, isLoading: isProfileLoading } = useQuery({
         queryKey: ["profile"],
         queryFn: profileApi.getProfile,
@@ -36,8 +39,18 @@ export default function ProfilePage() {
         mutationFn: profileApi.updateProfile,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["profile"] });
-            alert("Profile updated successfully!");
+            toast({
+                title: "Profile updated",
+                description: "Your profile information has been updated successfully.",
+            });
         },
+        onError: (err) => {
+            toast({
+                variant: "destructive",
+                title: "Update failed",
+                description: err.response?.data?.message || "Failed to update profile",
+            });
+        }
     });
 
     const revokeSessionMutation = useMutation({
@@ -103,12 +116,11 @@ export default function ProfilePage() {
                                     <TableRow>
                                         <TableHead>Device / IP</TableHead>
                                         <TableHead>Last Seen</TableHead>
-                                        <TableHead className="text-right">Action</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {isSessionsLoading ? (
-                                        <TableRow><TableCell colSpan={3} className="text-center">Loading sessions...</TableCell></TableRow>
+                                        <TableRow><TableCell colSpan={2} className="text-center">Loading sessions...</TableCell></TableRow>
                                     ) : sessions?.map((session) => (
                                         <TableRow key={session._id}>
                                             <TableCell>
@@ -131,18 +143,6 @@ export default function ProfilePage() {
                                             </TableCell>
                                             <TableCell className="text-xs">
                                                 {session.createdAt ? format(new Date(session.createdAt), "MMM d, HH:mm") : "Unknown"}
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                {!session.isCurrent && (
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() => revokeSessionMutation.mutate(session._id)}
-                                                        disabled={revokeSessionMutation.isPending}
-                                                    >
-                                                        <LogOut className="w-4 h-4 text-destructive" />
-                                                    </Button>
-                                                )}
                                             </TableCell>
                                         </TableRow>
                                     ))}

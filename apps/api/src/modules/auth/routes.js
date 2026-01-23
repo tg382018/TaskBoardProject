@@ -6,11 +6,12 @@ import {
   refreshController,
   logoutController,
   getSessionsController,
-  revokeSessionController
+  revokeSessionController,
+  resendOtpController
 } from "./controller.js";
 import { validateMiddleware } from "../../middlewares/validate.js";
 import { rateLimitMiddleware } from "../../middlewares/ratelimit.js";
-import { registerSchema, loginSchema, otpVerifySchema, refreshSchema } from "../../schemas/auth.schema.js";
+import { registerSchema, loginSchema, otpVerifySchema, refreshSchema, resendOtpSchema } from "../../schemas/auth.schema.js";
 import { authMiddleware } from "../../middlewares/auth.js";
 
 export function authRoutes() {
@@ -20,6 +21,7 @@ export function authRoutes() {
 
   router.post("/register", otpRateLimit, validateMiddleware(registerSchema), registerController);
   router.post("/login", otpRateLimit, validateMiddleware(loginSchema), loginController);
+  router.post("/resend", otpRateLimit, validateMiddleware(resendOtpSchema), resendOtpController);
   router.post("/verify", validateMiddleware(otpVerifySchema), verifyOtpController);
   router.post("/refresh", validateMiddleware(refreshSchema), refreshController);
   router.post("/logout", logoutController);

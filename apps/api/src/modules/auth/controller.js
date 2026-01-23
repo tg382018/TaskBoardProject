@@ -1,4 +1,4 @@
-import { register, login, verifyOtp, refreshTokens, logout, getUserSessions, revokeSession } from "./service.js";
+import { register, login, verifyOtp, refreshTokens, logout, getUserSessions, revokeSession, resendOtp } from "./service.js";
 
 export async function registerController(req, res, next) {
     try {
@@ -65,6 +65,16 @@ export async function revokeSessionController(req, res, next) {
         const { id } = req.params;
         await revokeSession({ id, userId });
         res.json({ ok: true });
+    } catch (err) {
+        next(err);
+    }
+}
+
+export async function resendOtpController(req, res, next) {
+    try {
+        const { email } = req.body;
+        const result = await resendOtp({ email, ip: req.ip });
+        res.json(result);
     } catch (err) {
         next(err);
     }
