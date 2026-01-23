@@ -16,7 +16,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronLeft, Send, Clock, User as UserIcon, UserPlus } from "lucide-react";
+import { ChevronLeft, Send, Clock, User as UserIcon, UserPlus, Check } from "lucide-react";
 import { format } from "date-fns";
 import { useSocketEvent } from "@/hooks/use-socket-event";
 import { useSocket } from "@/app/providers/socket-provider";
@@ -283,21 +283,37 @@ export default function TaskDetail() {
                             <Label>Current Status</Label>
                             <div className="grid grid-cols-1 gap-2">
                                 {[
-                                    { value: "Todo", label: "Todo" },
-                                    { value: "InProgress", label: "In Progress" },
-                                    { value: "Done", label: "Done" },
-                                ].map((s) => (
-                                    <Button
-                                        key={s.value}
-                                        variant={task.status === s.value ? "default" : "outline"}
-                                        size="sm"
-                                        className="justify-start"
-                                        onClick={() => updateStatusMutation.mutate(s.value)}
-                                        disabled={updateStatusMutation.isPending}
-                                    >
-                                        {s.label}
-                                    </Button>
-                                ))}
+                                    {
+                                        value: "Todo",
+                                        label: "Todo",
+                                        color: "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300",
+                                    },
+                                    {
+                                        value: "InProgress",
+                                        label: "In Progress",
+                                        color: "bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300",
+                                    },
+                                    {
+                                        value: "Done",
+                                        label: "Done",
+                                        color: "bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900 dark:text-green-300",
+                                    },
+                                ].map((s) => {
+                                    const isSelected = task.status === s.value;
+                                    return (
+                                        <Button
+                                            key={s.value}
+                                            variant="ghost"
+                                            size="sm"
+                                            className={`justify-start ${isSelected ? s.color + " ring-2 ring-offset-2 ring-primary" : "text-muted-foreground hover:bg-secondary"}`}
+                                            onClick={() => updateStatusMutation.mutate(s.value)}
+                                            disabled={updateStatusMutation.isPending}
+                                        >
+                                            {isSelected && <Check className="w-3 h-3 mr-2" />}
+                                            {s.label}
+                                        </Button>
+                                    );
+                                })}
                             </div>
                         </div>
 

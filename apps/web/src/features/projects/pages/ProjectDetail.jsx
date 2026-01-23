@@ -323,17 +323,23 @@ export default function ProjectDetail() {
                         );
                     }
 
-                    const variants = {
-                        Todo: "secondary",
-                        InProgress: "default",
-                        Done: "outline",
+                    const statusColors = {
+                        Todo: "bg-slate-100 text-slate-700 hover:bg-slate-100/80 dark:bg-slate-800 dark:text-slate-300",
+                        InProgress:
+                            "bg-blue-100 text-blue-700 hover:bg-blue-100/80 dark:bg-blue-900 dark:text-blue-300",
+                        Done: "bg-green-100 text-green-700 hover:bg-green-100/80 dark:bg-green-900 dark:text-green-300",
                     };
+                    const badgeClass =
+                        statusColors[status] || "bg-secondary text-secondary-foreground";
+
                     return (
                         <div
                             className={`flex items-center gap-2 ${editable ? "cursor-pointer group" : ""}`}
                             onClick={() => editable && startEditing(task._id, "status", status)}
                         >
-                            <Badge variant={variants[status] || "secondary"}>{status}</Badge>
+                            <Badge variant="outline" className={`border-0 ${badgeClass}`}>
+                                {status}
+                            </Badge>
                             {editable && (
                                 <Pencil className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                             )}
