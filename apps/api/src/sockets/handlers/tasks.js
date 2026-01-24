@@ -3,7 +3,6 @@ import { logger } from "../../utils/logger.js";
 
 /**
  * Task Socket Handlers
- * Ref: aa.txt -> sockets/handlers/tasks.js
  */
 export function handleTaskEvent(io, payload) {
     const { type, projectId } = payload;

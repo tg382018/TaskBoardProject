@@ -4,6 +4,7 @@ import { usersRoutes } from "./modules/users/routes.js";
 import { projectsRoutes } from "./modules/projects/routes.js";
 import { tasksRoutes } from "./modules/tasks/routes.js";
 import { commentsRoutes } from "./modules/comments/routes.js";
+import statsRoutes from "./modules/stats/routes.js";
 
 /**
  * Main router
@@ -21,6 +22,7 @@ export function buildRoutes() {
     router.use("/projects", projectsRoutes());
     router.use("/tasks", tasksRoutes());
     router.use("/comments", commentsRoutes());
+    router.use("/stats", statsRoutes);
 
     return router;
 }

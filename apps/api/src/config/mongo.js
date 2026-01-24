@@ -8,4 +8,7 @@ export async function connectMongo(mongoUrl) {
 
     logger.info("mongo connected");
     return mongoose.connection;
+} export async function disconnectMongo() {
+    await mongoose.disconnect();
+    logger.info("mongo disconnected");
 }

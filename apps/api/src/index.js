@@ -1,34 +1,28 @@
 import { config } from "./config/env.js";
 import { createApp } from "./app.js";
 import { logger } from "./utils/logger.js";
-
-import { connectMongo } from "./config/mongo.js";
-import { connectRedis } from "./config/redis.js";
-import { connectRabbit } from "./config/rabbit.js";
-
+import { loadAll } from "./loaders/index.js";
 import http from "http";
-import { loadSocket } from "./loaders/socket.js";
 
 async function bootstrap() {
-    // connect infra
-    await connectMongo(config.mongoUrl);
-    connectRedis(config.redisUrl);
-    await connectRabbit(config.rabbitUrl);
+    try {
+        // Create App & Server
+        logger.info("Bootstrap: Creating App...");
+        const app = createApp({ corsOrigins: config.corsOrigins });
+        const server = http.createServer(app);
 
-    // start api
-    const app = createApp({ corsOrigins: config.corsOrigins });
-    const server = http.createServer(app);
+        // Load Everything (DB, Rabbit, Middlewares, Socket, etc.)
+        await loadAll(app, server);
 
-    // loaders
-    const io = loadSocket(server, { corsOrigins: config.corsOrigins });
-    app.set("io", io); // make io accessible in controllers if needed
-
-    server.listen(config.port, () => {
-        logger.info(`API running on http://localhost:${config.port}`);
-    });
+        // Start Server
+        server.listen(config.port, () => {
+            logger.info(`API running on http://localhost:${config.port}`);
+        });
+    } catch (err) {
+        console.error("BOOTSTRAP ERROR DETAILED:", err);
+        logger.error("bootstrap failed", err);
+        process.exit(1);
+    }
 }
 
-bootstrap().catch((err) => {
-    logger.error("bootstrap failed", err);
-    process.exit(1);
-});
+bootstrap();

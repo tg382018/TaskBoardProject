@@ -12,7 +12,9 @@ export async function connectRabbit(rabbitUrl) {
             await channel.close();
             await conn.close();
             logger.info("rabbit closed");
-        } catch (e) { }
+        } catch (_e) {
+            /* Ignore close errors */
+        }
     };
 
     process.on("SIGINT", close);

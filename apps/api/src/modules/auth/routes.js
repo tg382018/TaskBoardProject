@@ -1,25 +1,48 @@
 import { Router } from "express";
 import {
-  registerController,
-  loginController,
-  verifyOtpController,
-  refreshController,
-  logoutController
+    registerController,
+    loginController,
+    verifyOtpController,
+    refreshController,
+    logoutController,
+    getSessionsController,
+    revokeSessionController,
+    resendOtpController,
+    getDevOtpController,
 } from "./controller.js";
 import { validateMiddleware } from "../../middlewares/validate.js";
 import { rateLimitMiddleware } from "../../middlewares/ratelimit.js";
-import { registerSchema, loginSchema, otpVerifySchema, refreshSchema } from "../../schemas/auth.schema.js";
+import {
+    registerSchema,
+    loginSchema,
+    otpVerifySchema,
+    refreshTokenSchema,
+    resendOtpSchema,
+} from "@packages/common/schemas/auth.schema.js";
+import { authMiddleware } from "../../middlewares/auth.js";
 
 export function authRoutes() {
-  const router = Router();
+    const router = Router();
 
-  const otpRateLimit = rateLimitMiddleware({ windowMs: 5 * 60 * 1000, max: 5, keyPrefix: "rl:otp:" });
-  // 1 kullanıcı 5 dk içinde max 5 kez ; her isteğin rediste tutulması
-  router.post("/register", otpRateLimit, validateMiddleware(registerSchema), registerController);
-  router.post("/login", otpRateLimit, validateMiddleware(loginSchema), loginController);
-  router.post("/verify", validateMiddleware(otpVerifySchema), verifyOtpController);
-  router.post("/refresh", validateMiddleware(refreshSchema), refreshController);
-  router.post("/logout", logoutController);
+    const otpRateLimit = rateLimitMiddleware({
+        windowMs: 5 * 60 * 1000,
+        max: 5,
+        keyPrefix: "rl:otp:",
+    });
 
-  return router;
+    router.post("/register", otpRateLimit, validateMiddleware(registerSchema), registerController);
+    router.post("/login", otpRateLimit, validateMiddleware(loginSchema), loginController);
+    router.post("/resend", otpRateLimit, validateMiddleware(resendOtpSchema), resendOtpController);
+    router.post("/verify", validateMiddleware(otpVerifySchema), verifyOtpController);
+    router.post("/refresh", validateMiddleware(refreshTokenSchema), refreshController);
+    router.post("/logout", logoutController);
+
+    // Sessions Management
+    router.get("/sessions", authMiddleware, getSessionsController);
+    router.delete("/sessions/:id", authMiddleware, revokeSessionController);
+
+    // Development-only: Peek at OTP for console notification
+    router.get("/dev/otp/:email", getDevOtpController);
+
+    return router;
 }

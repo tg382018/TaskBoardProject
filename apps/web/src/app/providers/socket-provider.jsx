@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { io } from "socket.io-client";
-import { useAuthStore } from "../../store/auth.store";
+import { useAuthStore } from "@/app/store/auth.store";
+import { env } from "@/app/config/env";
 
 const SocketContext = createContext();
 
@@ -17,8 +18,21 @@ export function SocketProvider({ children }) {
             return;
         }
 
-        const newSocket = io("/realtime", {
+        const socketPath = env.SOCKET_URL || "/realtime";
+        const newSocket = io(socketPath, {
             auth: { token: accessToken },
+        });
+
+        // Listen for OTP stub delivery (development/demo feature)
+        newSocket.on("otp.stub.delivered", (data) => {
+            console.log(
+                "%c📧 1 New Notification on Stub Mail Service",
+                "background: #4CAF50; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;"
+            );
+            console.log(
+                `%cYour code is: ${data.code}`,
+                "color: #2196F3; font-size: 16px; font-weight: bold;"
+            );
         });
 
         setSocket(newSocket);

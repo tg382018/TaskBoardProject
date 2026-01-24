@@ -3,7 +3,6 @@ import { EventLog } from "../models/event.model.js";
 
 /**
  * Report/Analytics Service
- * Ref: aa.txt -> worker/src/services/report.js
  */
 
 // In-memory stats stub (aligning with current logic)
@@ -19,7 +18,7 @@ export async function trackEvent(event) {
     try {
         await EventLog.create({
             type: event.type,
-            payload: event
+            payload: event,
         });
         logger.debug(`[service:report] Event persisted: ${event.type}`);
     } catch (err) {
@@ -32,3 +31,6 @@ export async function trackEvent(event) {
 export function getStats() {
     return stats;
 }
+
+// Alias for analytics consumer
+export const getEventStats = getStats;
