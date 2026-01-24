@@ -16,3 +16,6 @@ aa.txt
 auth.json
 proj.json
 task.json
+
+# Husky internal files
+.husky/_
