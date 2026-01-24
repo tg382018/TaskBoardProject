@@ -3,7 +3,6 @@ import { logger } from "../../utils/logger.js";
 
 /**
  * Notification Socket Handlers
- * Ref: aa.txt -> sockets/handlers/notifications.js
  */
 export function handleNotificationEvent(io, payload) {
     const { userId } = payload;

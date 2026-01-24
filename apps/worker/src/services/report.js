@@ -3,7 +3,6 @@ import { EventLog } from "../models/event.model.js";
 
 /**
  * Report/Analytics Service
- * Ref: aa.txt -> worker/src/services/report.js
  */
 
 // In-memory stats stub (aligning with current logic)

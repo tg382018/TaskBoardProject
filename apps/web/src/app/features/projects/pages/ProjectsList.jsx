@@ -178,25 +178,7 @@ export default function ProjectsList() {
                     </div>
                 ) : (
                     <div className="p-4 space-y-4">
-                        <ProjectFilters
-                            searchValue={searchInput}
-                            onSearch={handleSearch}
-                            limit={limit}
-                            onLimitChange={(v) => {
-                                setLimit(v);
-                                setPage(1);
-                            }}
-                            sortBy={sortBy}
-                            onSortChange={(v) => {
-                                setSortBy(v);
-                                setPage(1);
-                            }}
-                            sortOrder={sortOrder}
-                            onSortOrderChange={(v) => {
-                                setSortOrder(v);
-                                setPage(1);
-                            }}
-                        />
+                        <ProjectFilters searchValue={searchInput} onSearch={handleSearch} />
 
                         <DataTable
                             columns={columns}
