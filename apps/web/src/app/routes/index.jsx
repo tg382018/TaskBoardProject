@@ -9,8 +9,9 @@ import ProjectDetail from "@/features/projects/pages/ProjectDetail";
 import TaskDetail from "@/features/tasks/pages/TaskDetail";
 import ProfilePage from "@/features/profile/pages/Profile";
 import { DailySummaryWidget } from "@/components/widgets/DailySummaryWidget";
+import { UserStatsWidget } from "@/components/widgets/UserStatsWidget";
 
-// Dashboard with Daily Summary Widget
+// Dashboard with Daily Summary Widget and User Stats
 const Dashboard = () => (
     <div className="space-y-6">
         <div>
@@ -19,6 +20,7 @@ const Dashboard = () => (
                 Select a project to get started with your tasks.
             </p>
         </div>
+        <UserStatsWidget />
         <DailySummaryWidget />
     </div>
 );

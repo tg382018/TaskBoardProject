@@ -2,12 +2,13 @@ import { logger } from "../utils/logger.js";
 import { handleMail } from "./mailer.consumer.js";
 import { handleNotification } from "./notifier.consumer.js";
 import { handleAnalytics } from "./analytics.consumer.js";
+import { handleStats } from "./stats.consumer.js";
 import { RABBIT } from "../../../../packages/common/src/rabbit-topology.js";
 
 export async function startTaskboardConsumer(channel) {
     // Topology'den ayarları çekiyoruz
     const { exchange, exchangeType, workerQueue } = RABBIT;
-    const bindings = ["task.*", "otp.*", "comment.*"];
+    const bindings = ["task.*", "otp.*", "comment.*", "project.*"];
 
     await channel.assertExchange(exchange, exchangeType, { durable: true });
     const q = await channel.assertQueue(workerQueue, { durable: true });
@@ -26,7 +27,7 @@ export async function startTaskboardConsumer(channel) {
             try {
                 const rawBody = msg.content.toString("utf-8");
                 const event = JSON.parse(rawBody);
-                logger.info(`processing event: ${event.type || 'unknown'}`, { rawBody });
+                logger.info(`processing event: ${event.type || "unknown"}`, { rawBody });
 
                 if (!event.type) {
                     logger.warn("Skipping event with no type");
@@ -37,6 +38,7 @@ export async function startTaskboardConsumer(channel) {
                 await handleMail(event);
                 await handleNotification(event);
                 await handleAnalytics(event);
+                await handleStats(event);
 
                 channel.ack(msg);
             } catch (err) {

@@ -138,7 +138,7 @@ export async function verifyOtp({ email, code, userAgent, ip }) {
     return { accessToken, refreshToken, user };
 }
 
-export async function refreshTokens({ refreshToken }) {
+export async function refreshTokens({ refreshToken, userAgent = "Unknown", ip = "" }) {
     if (!refreshToken) throw new Error("Refresh token required");
 
     const payload = verifyRefreshToken(refreshToken);
@@ -157,6 +157,8 @@ export async function refreshTokens({ refreshToken }) {
     await createSession({
         userId: user._id,
         refreshToken: newRefreshToken,
+        userAgent,
+        ip,
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 

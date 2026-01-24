@@ -1,29 +1,36 @@
 import * as repository from "./repository.js";
 import { findOrCreateUser } from "../users/repository.js";
+import { publishEvent } from "../../events/publisher.js";
 
 export async function createNewProject({ title, description, ownerId }) {
-    return repository.createProject({
+    const project = await repository.createProject({
         title,
         description,
         ownerId,
         members: [ownerId], // Owner is automatically a member
     });
+
+    // Publish project.created event for stats tracking
+    await publishEvent("project.created", {
+        type: "project.created",
+        userId: ownerId,
+        projectId: project._id.toString(),
+        data: { title, description },
+    });
+
+    return project;
 }
 
-export async function getMyProjects(userId, {
-    page = 1,
-    limit = 10,
-    skip = 0,
-    search = "",
-    sortBy = "createdAt",
-    sortOrder = "desc"
-} = {}) {
+export async function getMyProjects(
+    userId,
+    { page = 1, limit = 10, skip = 0, search = "", sortBy = "createdAt", sortOrder = "desc" } = {}
+) {
     const { data, total } = await repository.findProjectsByUserId(userId, {
         skip,
         limit,
         search,
         sortBy,
-        sortOrder
+        sortOrder,
     });
 
     return {
@@ -32,8 +39,8 @@ export async function getMyProjects(userId, {
             total,
             page,
             limit,
-            totalPages: Math.ceil(total / limit)
-        }
+            totalPages: Math.ceil(total / limit),
+        },
     };
 }
 
@@ -61,6 +68,15 @@ export async function updateExistingProject(id, userId, data) {
 export async function removeProject(id, userId) {
     const deleted = await repository.deleteProject(id, userId);
     if (!deleted) throw new Error("Project not found or unauthorized");
+
+    // Publish project.deleted event for stats tracking
+    await publishEvent("project.deleted", {
+        type: "project.deleted",
+        userId: userId,
+        projectId: id,
+        data: { title: deleted.title },
+    });
+
     return deleted;
 }
 

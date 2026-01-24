@@ -1,4 +1,13 @@
-import { register, login, verifyOtp, refreshTokens, logout, getUserSessions, revokeSession, resendOtp } from "./service.js";
+import {
+    register,
+    login,
+    verifyOtp,
+    refreshTokens,
+    logout,
+    getUserSessions,
+    revokeSession,
+    resendOtp,
+} from "./service.js";
 import { getOtp } from "./repository.js";
 import { config } from "../../config/env.js";
 
@@ -35,7 +44,8 @@ export async function verifyOtpController(req, res, next) {
 export async function refreshController(req, res, next) {
     try {
         const { refreshToken } = req.body;
-        const result = await refreshTokens({ refreshToken });
+        const userAgent = req.get("User-Agent") || "Unknown";
+        const result = await refreshTokens({ refreshToken, userAgent, ip: req.ip });
         res.json(result);
     } catch (err) {
         next(err);

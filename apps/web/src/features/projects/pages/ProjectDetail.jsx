@@ -341,7 +341,7 @@ export default function ProjectDetail() {
                                 {status}
                             </Badge>
                             {editable && (
-                                <Pencil className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <Pencil className="h-3 w-3 text-muted-foreground opacity-50 group-hover:opacity-100 transition-opacity" />
                             )}
                         </div>
                     );
@@ -414,7 +414,7 @@ export default function ProjectDetail() {
 
                     return (
                         <div
-                            className={editable ? "cursor-pointer" : ""}
+                            className={`flex items-center gap-2 ${editable ? "cursor-pointer group" : ""}`}
                             onClick={() =>
                                 editable &&
                                 startEditing(task._id, "assigneeId", assignee?._id || "")
@@ -426,6 +426,9 @@ export default function ProjectDetail() {
                                 <span className="text-muted-foreground text-sm italic">
                                     Unassigned
                                 </span>
+                            )}
+                            {editable && (
+                                <Pencil className="h-3 w-3 text-muted-foreground opacity-50 group-hover:opacity-100 transition-opacity" />
                             )}
                         </div>
                     );

@@ -1,9 +1,5 @@
 import { useState, useMemo } from "react";
-import {
-    flexRender,
-    getCoreRowModel,
-    useReactTable,
-} from "@tanstack/react-table";
+import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 
 import {
     Table,
@@ -64,7 +60,8 @@ export function DataTable({
             } else if (isAsc) {
                 onSort(column.id, "desc");
             } else {
-                onSort(null, null); // Clear sort
+                // Toggle back to asc instead of clearing
+                onSort(column.id, "asc");
             }
         };
 
@@ -132,7 +129,8 @@ export function DataTable({
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => {
-                                    const canSort = header.column.columnDef.enableSorting !== false && onSort;
+                                    const canSort =
+                                        header.column.columnDef.enableSorting !== false && onSort;
                                     return (
                                         <TableHead key={header.id}>
                                             {header.isPlaceholder ? null : canSort ? (
@@ -173,10 +171,7 @@ export function DataTable({
                             ))
                         ) : (
                             <TableRow>
-                                <TableCell
-                                    colSpan={columns.length}
-                                    className="h-24 text-center"
-                                >
+                                <TableCell colSpan={columns.length} className="h-24 text-center">
                                     No results.
                                 </TableCell>
                             </TableRow>
