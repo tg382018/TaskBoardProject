@@ -14,7 +14,7 @@ import {
     createProjectSchema,
     updateProjectSchema,
     addMemberSchema,
-} from "../../schemas/project.schema.js";
+} from "@packages/common/schemas/project.schema.js";
 
 export function projectsRoutes() {
     const router = Router();

@@ -4,11 +4,11 @@ import {
     listTasksController,
     getTaskController,
     updateTaskController,
-    deleteTaskController
+    deleteTaskController,
 } from "./controller.js";
 import { authMiddleware } from "../../middlewares/auth.js";
 import { validateMiddleware } from "../../middlewares/validate.js";
-import { createTaskSchema, updateTaskSchema } from "../../schemas/task.schema.js";
+import { createTaskSchema, updateTaskSchema } from "@packages/common/schemas/task.schema.js";
 
 export function tasksRoutes() {
     const router = Router();

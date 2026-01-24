@@ -15,7 +15,9 @@ export async function connectRabbit(rabbitUrl) {
             await rabbitChannel?.close();
             await rabbitConn?.close();
             logger.info("rabbit closed");
-        } catch (e) { }
+        } catch (_e) {
+            /* Ignore close errors */
+        }
     };
 
     process.on("SIGINT", close);
@@ -24,7 +26,8 @@ export async function connectRabbit(rabbitUrl) {
     return { conn: rabbitConn, channel: rabbitChannel };
 }
 
-export function getRabbitChannel() { //connectrabbit çalışmadan getrabbitchannel çalıştırılırsa hata verir
+export function getRabbitChannel() {
+    //connectrabbit çalışmadan getrabbitchannel çalıştırılırsa hata verir
     if (!rabbitChannel) throw new Error("Rabbit channel not initialized");
     return rabbitChannel;
 }

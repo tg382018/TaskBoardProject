@@ -7,5 +7,5 @@ export default {
     testMatch: ["**/src/tests/**/*.test.js"],
     verbose: true,
     testTimeout: 30000,
-    setupFilesAfterEnv: ["<rootDir>/tests/setup.js"],
+    setupFilesAfterEnv: ["<rootDir>/src/tests/setup.js"],
 };

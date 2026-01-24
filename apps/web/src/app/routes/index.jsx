@@ -1,37 +1,31 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import { useAuthStore } from "@/store/auth.store";
-import AuthLayout from "@/layouts/auth-layout";
-import AppLayout from "@/layouts/app-layout";
-import LoginPage from "@/features/auth/pages/Login";
-import RegisterPage from "@/features/auth/pages/Register";
-import ProjectsList from "@/features/projects/pages/ProjectsList";
-import ProjectDetail from "@/features/projects/pages/ProjectDetail";
-import TaskDetail from "@/features/tasks/pages/TaskDetail";
-import ProfilePage from "@/features/profile/pages/Profile";
-import { DailySummaryWidget } from "@/components/widgets/DailySummaryWidget";
-import { UserStatsWidget } from "@/components/widgets/UserStatsWidget";
+import { useAuth } from "@/app/hooks/use-auth";
+import AuthLayout from "@/app/layouts/auth-layout";
+import ProtectedRoute from "./protected";
+import LoginPage from "@/app/features/auth/pages/Login";
+import RegisterPage from "@/app/features/auth/pages/Register";
+import ProjectsList from "@/app/features/projects/pages/ProjectsList";
+import ProjectDetail from "@/app/features/projects/pages/ProjectDetail";
+import TaskDetail from "@/app/features/tasks/pages/TaskDetail";
+import ProfilePage from "@/app/features/profile/pages/Profile";
+import { DailySummaryWidget } from "@/app/components/widgets/DailySummaryWidget";
+import { UserStatsWidget } from "@/app/components/widgets/UserStatsWidget";
+import { PageHeader } from "@/app/components/common/page-header";
 
 // Dashboard with Daily Summary Widget and User Stats
 const Dashboard = () => (
     <div className="space-y-6">
-        <div>
-            <h1 className="text-2xl font-bold">Welcome back!</h1>
-            <p className="text-muted-foreground">
-                Select a project to get started with your tasks.
-            </p>
-        </div>
+        <PageHeader
+            title="Welcome back!"
+            description="Select a project to get started with your tasks."
+        />
         <UserStatsWidget />
         <DailySummaryWidget />
     </div>
 );
 
-function ProtectedRoute() {
-    const { isAuthenticated } = useAuthStore();
-    return isAuthenticated ? <AppLayout /> : <Navigate to="/login" replace />;
-}
-
 function PublicRoute() {
-    const { isAuthenticated } = useAuthStore();
+    const { isAuthenticated } = useAuth();
     return !isAuthenticated ? <AuthLayout /> : <Navigate to="/" replace />;
 }
 

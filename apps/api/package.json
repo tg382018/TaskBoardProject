@@ -24,7 +24,8 @@
         "morgan": "^1.10.1",
         "pino": "^10.2.1",
         "socket.io": "^4.8.3",
-        "swagger-ui-express": "^5.0.1"
+        "swagger-ui-express": "^5.0.1",
+        "@packages/common": "workspace:*"
     },
     "devDependencies": {
         "@types/jest": "^30.0.0",

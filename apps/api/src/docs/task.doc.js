@@ -1,3 +1,5 @@
+import { TaskStatus, TaskPriority } from "@packages/common/constants.js";
+
 export const taskDocs = {
     "/tasks": {
         get: {
@@ -5,11 +7,11 @@ export const taskDocs = {
             summary: "List tasks for a project",
             security: [{ bearerAuth: [] }],
             parameters: [
-                { name: "projectId", in: "query", required: true, schema: { type: "string" } }
+                { name: "projectId", in: "query", required: true, schema: { type: "string" } },
             ],
             responses: {
-                200: { description: "Task list" }
-            }
+                200: { description: "Task list" },
+            },
         },
         post: {
             tags: ["Tasks"],
@@ -27,25 +29,23 @@ export const taskDocs = {
                                 projectId: { type: "string" },
                                 description: { type: "string" },
                                 priority: { type: "string", enum: ["Low", "Medium", "High"] },
-                                status: { type: "string", enum: ["Todo", "InProgress", "Done"] }
-                            }
-                        }
-                    }
-                }
+                                status: { type: "string", enum: ["Todo", "InProgress", "Done"] },
+                            },
+                        },
+                    },
+                },
             },
             responses: {
-                201: { description: "Task created" }
-            }
-        }
+                201: { description: "Task created" },
+            },
+        },
     },
     "/tasks/{id}": {
         patch: {
             tags: ["Tasks"],
             summary: "Update task",
             security: [{ bearerAuth: [] }],
-            parameters: [
-                { name: "id", in: "path", required: true, schema: { type: "string" } }
-            ],
+            parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
             requestBody: {
                 content: {
                     "application/json": {
@@ -53,28 +53,26 @@ export const taskDocs = {
                             type: "object",
                             properties: {
                                 title: { type: "string" },
-                                status: { type: "string" },
-                                priority: { type: "string" },
-                                assigneeId: { type: "string" }
-                            }
-                        }
-                    }
-                }
+                                status: { type: "string", enum: Object.values(TaskStatus) },
+                                priority: { type: "string", enum: Object.values(TaskPriority) },
+                                assigneeId: { type: "string" },
+                            },
+                        },
+                    },
+                },
             },
             responses: {
-                200: { description: "Task updated" }
-            }
+                200: { description: "Task updated" },
+            },
         },
         delete: {
             tags: ["Tasks"],
             summary: "Delete task",
             security: [{ bearerAuth: [] }],
-            parameters: [
-                { name: "id", in: "path", required: true, schema: { type: "string" } }
-            ],
+            parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
             responses: {
-                204: { description: "Task deleted" }
-            }
-        }
-    }
+                204: { description: "Task deleted" },
+            },
+        },
+    },
 };
