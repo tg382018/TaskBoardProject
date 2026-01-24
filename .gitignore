@@ -8,3 +8,14 @@ build
 coverage
 .vscode
 .idea
+aa.txt
+
+# Temp & Logs
+*.log
+*.pid
+auth.json
+proj.json
+task.json
+
+# Husky internal files
+.husky/_
