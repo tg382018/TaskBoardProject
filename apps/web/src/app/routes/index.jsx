@@ -44,7 +44,6 @@ export default function AppRoutes() {
                 <Route path="/projects/:id" element={<ProjectDetail />} />
                 <Route path="/tasks/:id" element={<TaskDetail />} />
                 <Route path="/profile" element={<ProfilePage />} />
-                <Route path="/docs" element={<DocsPage />} />
             </Route>
 
             <Route path="/docs-public" element={<DocsPage />} />

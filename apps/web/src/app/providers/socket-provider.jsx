@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 import { useAuthStore } from "@/app/store/auth.store";
 import { env } from "@/app/config/env";
@@ -7,20 +7,28 @@ const SocketContext = createContext();
 
 export function SocketProvider({ children }) {
     const [socket, setSocket] = useState(null);
-    const { accessToken } = useAuthStore();
+    const socketRef = useRef(null);
+    const { isAuthenticated } = useAuthStore();
 
     useEffect(() => {
-        if (!accessToken) {
-            if (socket) {
-                socket.disconnect();
+        // Cleanup existing socket if not authenticated
+        if (!isAuthenticated) {
+            if (socketRef.current) {
+                socketRef.current.disconnect();
+                socketRef.current = null;
                 setSocket(null);
             }
             return;
         }
 
+        // Don't create a new socket if one already exists
+        if (socketRef.current) {
+            return;
+        }
+
         const socketPath = env.SOCKET_URL || "/realtime";
         const newSocket = io(socketPath, {
-            auth: { token: accessToken },
+            withCredentials: true, // Use cookies for auth instead of token
         });
 
         // Listen for OTP stub delivery (development/demo feature)
@@ -35,10 +43,16 @@ export function SocketProvider({ children }) {
             );
         });
 
+        socketRef.current = newSocket;
         setSocket(newSocket);
 
-        return () => newSocket.disconnect();
-    }, [accessToken, socket]);
+        return () => {
+            if (socketRef.current) {
+                socketRef.current.disconnect();
+                socketRef.current = null;
+            }
+        };
+    }, [isAuthenticated]);
 
     return <SocketContext.Provider value={socket}>{children}</SocketContext.Provider>;
 }

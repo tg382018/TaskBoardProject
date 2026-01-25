@@ -4,31 +4,35 @@ import { env } from "../config/env";
 
 const client = axios.create({
     baseURL: env.API_URL,
+    withCredentials: true, // Enable sending cookies
     headers: {
         "Content-Type": "application/json",
     },
 });
 
-client.interceptors.request.use((config) => {
-    const { accessToken } = useAuthStore.getState();
-    if (accessToken) {
-        config.headers.Authorization = `Bearer ${accessToken}`;
-    }
-    return config;
-});
+// Request interceptor removed as tokens are now in cookies
+client.interceptors.request.use((config) => config);
 
 client.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
-        const { refreshToken, updateTokens, clearAuth } = useAuthStore.getState();
+        const { isAuthenticated, clearAuth, setAuth } = useAuthStore.getState();
 
-        if (error.response?.status === 401 && refreshToken && !originalRequest._retry) {
+        // If 401 and we are supposedly authenticated, try refresh
+        if (error.response?.status === 401 && isAuthenticated && !originalRequest._retry) {
             originalRequest._retry = true;
             try {
-                const { data } = await axios.post("/api/auth/refresh", { refreshToken });
-                updateTokens(data.accessToken, data.refreshToken);
-                originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
+                // Refresh request will automatically include the refreshToken cookie
+                const { data } = await axios.post(
+                    `${env.API_URL}/api/auth/refresh`,
+                    {},
+                    { withCredentials: true }
+                );
+                // Update user state after successful refresh
+                if (data.user) {
+                    setAuth({ user: data.user });
+                }
                 return client(originalRequest);
             } catch (refreshError) {
                 clearAuth();

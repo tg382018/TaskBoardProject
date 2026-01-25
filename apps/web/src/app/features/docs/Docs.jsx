@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation, Link } from "react-router-dom";
 import {
     Card,
     CardContent,
@@ -17,6 +18,7 @@ import {
     Activity,
     Database,
     Zap,
+    ArrowLeft,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -24,6 +26,8 @@ import { docsContent } from "./content";
 
 export default function DocsPage() {
     const [selectedDoc, setSelectedDoc] = useState(docsContent[0]);
+    const location = useLocation();
+    const isPublic = location.pathname === "/docs-public";
 
     const hubs = [
         {
@@ -40,6 +44,17 @@ export default function DocsPage() {
 
     return (
         <div className="container mx-auto py-6 max-w-7xl h-[calc(100vh-4rem)]">
+            {/* Back Button for Public Docs */}
+            {isPublic && (
+                <div className="mb-4">
+                    <Link to="/login">
+                        <Button variant="ghost" className="gap-2">
+                            <ArrowLeft className="h-4 w-4" />
+                            Back
+                        </Button>
+                    </Link>
+                </div>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6 h-full">
                 {/* Sidebar */}
                 <Card className="md:col-span-3 h-full flex flex-col overflow-hidden">
