@@ -4,6 +4,7 @@ import { logger } from "../utils/logger.js";
 /**
  * Stats Consumer
  * Tracks user statistics based on events
+ * //for widget
  */
 export async function handleStats(event) {
     const { type, userId, creatorId, _updatedBy, deletedBy, data, changes } = event;

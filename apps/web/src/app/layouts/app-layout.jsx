@@ -2,7 +2,7 @@ import { Outlet, Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/app/hooks/use-auth";
 import { useUiStore } from "@/app/store/ui.store";
 import { Button } from "@packages/ui";
-import { LogOut, Home, FolderKanban, User, Menu } from "lucide-react";
+import { LogOut, Home, FolderKanban, User, Menu, BookOpen } from "lucide-react";
 import { ThemeToggle } from "@/app/components/ui/theme-toggle";
 import { Sheet, SheetContent, SheetTrigger } from "@packages/ui";
 import logo from "@/assets/logo.svg";
@@ -50,6 +50,13 @@ export default function AppLayout() {
                     >
                         <User className="h-4 w-4" />
                         Profile
+                    </Link>
+                    <Link
+                        to="/docs"
+                        className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary ${isActive("/docs") ? "bg-muted text-primary" : "text-muted-foreground"}`}
+                    >
+                        <BookOpen className="h-4 w-4" />
+                        Documentation
                     </Link>
                 </nav>
             </div>

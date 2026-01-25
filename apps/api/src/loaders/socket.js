@@ -21,8 +21,8 @@ export function loadSocket(server, { corsOrigins }) {
     realtimeNs.use(async (socket, next) => {
         try {
             const token =
-                socket.handshake.auth?.token ||
-                socket.handshake.headers?.authorization?.split(" ")[1];
+                socket.handshake.auth?.token || //token
+                socket.handshake.headers?.authorization?.split(" ")[1]; //http
 
             if (!token) {
                 logger.warn("[socket] Auth failed: Token missing");

@@ -10,5 +10,6 @@ export function handleTaskEvent(io, payload) {
     if (projectId) {
         logger.debug(`[socket:tasks] Emitting ${type} to project:${projectId}`);
         io.of("/realtime").to(ROOMS.PROJECT(projectId)).emit(type, payload);
+        //ilgili odadaki tüm clientlara emit ediyoruz
     }
 }

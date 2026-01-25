@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import {
     Button,
@@ -41,30 +41,36 @@ export function TaskTable({
     const [editingCell, setEditingCell] = useState(null); // { rowId, field }
     const [editValue, setEditValue] = useState("");
 
-    const canEditTask = (task) => {
-        if (!user) return false;
-        const isProjectOwner = user._id === (project?.ownerId?._id || project?.ownerId);
-        const isTaskCreator = user._id === (task.creatorId?._id || task.creatorId);
-        return isProjectOwner || isTaskCreator;
-    };
+    const canEditTask = useCallback(
+        (task) => {
+            if (!user) return false;
+            const isProjectOwner = user._id === (project?.ownerId?._id || project?.ownerId);
+            const isTaskCreator = user._id === (task.creatorId?._id || task.creatorId);
+            return isProjectOwner || isTaskCreator;
+        },
+        [user, project]
+    );
 
-    const startEditing = (rowId, field, currentValue) => {
+    const startEditing = useCallback((rowId, field, currentValue) => {
         setEditingCell({ rowId, field });
         setEditValue(currentValue || "");
-    };
+    }, []);
 
-    const cancelEditing = () => {
+    const cancelEditing = useCallback(() => {
         setEditingCell(null);
         setEditValue("");
-    };
+    }, []);
 
-    const saveEditing = (taskId) => {
-        if (!editingCell) return;
-        const data = { [editingCell.field]: editValue };
-        onTaskUpdate(taskId, data);
-        setEditingCell(null);
-        setEditValue("");
-    };
+    const saveEditing = useCallback(
+        (taskId) => {
+            if (!editingCell) return;
+            const data = { [editingCell.field]: editValue };
+            onTaskUpdate(taskId, data);
+            setEditingCell(null);
+            setEditValue("");
+        },
+        [editingCell, editValue, onTaskUpdate]
+    );
 
     const columns = useMemo(
         () => [
@@ -313,7 +319,7 @@ export function TaskTable({
                 },
             },
         ],
-        [editingCell, editValue, project, user]
+        [editingCell, editValue, project, canEditTask, saveEditing, startEditing, cancelEditing]
     );
 
     return (

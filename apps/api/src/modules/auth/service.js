@@ -8,12 +8,11 @@ import {
     getSessionsByUser,
     deleteSessionById,
 } from "./repository.js";
-import { findOrCreateUser, findUserByEmail, User } from "../users/repository.js";
+import { findUserByEmail, User } from "../users/repository.js";
 import { publishOtpRequested } from "./events.js";
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from "../../utils/jwt.js";
 import bcrypt from "bcrypt";
 
-const OTP_TTL_SECONDS = 5 * 60;
 const MAX_ATTEMPTS = 5;
 
 /**
@@ -28,7 +27,7 @@ async function requestOtp(email, _ip) {
     });
 }
 
-export async function register({ email, password, name, ip }) {
+export async function register({ email, password, name }) {
     let user = await findUserByEmail(email);
 
     // Eğer kullanıcı varsa ve zaten şifresi/ismi set edilmişse (tam kayıtlıysa) hata ver

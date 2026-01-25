@@ -83,7 +83,14 @@ export default [
             "react-hooks/exhaustive-deps": "warn",
 
             // General rules
-            "no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
+            "no-unused-vars": [
+                "warn",
+                {
+                    argsIgnorePattern: "^_",
+                    varsIgnorePattern: "^_",
+                    caughtErrorsIgnorePattern: "^_",
+                },
+            ],
             "no-console": "off",
             "prefer-const": "warn",
             "no-var": "error",
@@ -92,6 +99,23 @@ export default [
             react: {
                 version: "detect",
             },
+        },
+    },
+    {
+        files: [
+            "packages/ui/**/*.jsx",
+            "apps/web/src/app/components/common/**/*.jsx",
+            "apps/web/src/app/components/ui/**/*.jsx",
+            "apps/web/src/main.jsx",
+            "apps/web/src/app/routes/**/*.jsx",
+            "apps/web/src/app/providers/**/*.jsx",
+            "apps/web/src/app/layouts/**/*.jsx",
+            "apps/web/src/app/features/**/*.jsx",
+            "apps/web/src/app/components/Dashboard.jsx",
+            "apps/web/src/app/components/widgets/**/*.jsx",
+        ],
+        rules: {
+            "no-unused-vars": "off",
         },
     },
     {

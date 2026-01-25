@@ -10,5 +10,6 @@ export function handleNotificationEvent(io, payload) {
     if (userId) {
         logger.debug(`[socket:notifications] Emitting private notification to user:${userId}`);
         io.of("/realtime").to(ROOMS.USER(userId)).emit("notification", payload);
+        //ilgili odadaki tüm clientlara emit ediyoruz
     }
 }

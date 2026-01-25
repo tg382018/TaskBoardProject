@@ -1,11 +1,19 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, Link } from "react-router-dom";
 import { ThemeToggle } from "@/app/components/ui/theme-toggle";
 import logo from "@/assets/logo.svg";
+import { Button } from "@packages/ui";
+import { BookOpen } from "lucide-react";
 
 export default function AuthLayout() {
     return (
         <div className="min-h-screen bg-background flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative">
-            <div className="absolute top-4 right-4">
+            <div className="absolute top-4 right-4 flex items-center gap-2">
+                <Button variant="ghost" size="sm" asChild>
+                    <Link to="/docs-public" className="flex items-center gap-2">
+                        <BookOpen className="h-4 w-4" />
+                        <span className="hidden sm:inline">Docs</span>
+                    </Link>
+                </Button>
                 <ThemeToggle />
             </div>
             <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">

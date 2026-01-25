@@ -16,7 +16,7 @@ export function signRefreshToken(payload) {
 export function verifyAccessToken(token) {
     try {
         return jwt.verify(token, config.jwtAccessSecret);
-    } catch (err) {
+    } catch (_err) {
         return null;
     }
 }
@@ -24,7 +24,7 @@ export function verifyAccessToken(token) {
 export function verifyRefreshToken(token) {
     try {
         return jwt.verify(token, config.jwtRefreshSecret);
-    } catch (err) {
+    } catch (_err) {
         return null;
     }
 }

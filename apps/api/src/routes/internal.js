@@ -5,7 +5,12 @@ import { broadcastEvent } from "../sockets/bridge.js";
  * Internal API Routes
  * Only for service-to-service communication (Worker -> API)
  */
-export function internalRoutes(app) {
+
+// 1- API ISTEGI ILE DB DEGISTI
+//2- RABBITMQ BUNU EVENT OLARAK GONDERDI
+//3- WORKER BUNU OKUR
+//4-WORKER BU ENDPOINTI YOLLAYARAK OLAYI BROADCAST EDILMESINI SAGLAR
+export function internalRoutes(_app) {
     const router = Router();
 
     router.post("/broadcast", (req, res) => {
