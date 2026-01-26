@@ -26,6 +26,17 @@ export async function connectRabbit(rabbitUrl) {
     return { conn: rabbitConn, channel: rabbitChannel };
 }
 
+export async function closeRabbit() {
+    try {
+        await rabbitChannel?.close();
+        await rabbitConn?.close();
+        rabbitChannel = null;
+        rabbitConn = null;
+    } catch (e) {
+        // Ignore errors during close
+    }
+}
+
 export function getRabbitChannel() {
     //connectrabbit çalışmadan getrabbitchannel çalıştırılırsa hata verir
     if (!rabbitChannel) throw new Error("Rabbit channel not initialized");

@@ -5,17 +5,13 @@
 import { useAuthStore } from "@/app/store/auth.store";
 
 export function useAuth() {
-    const { user, accessToken, refreshToken, isAuthenticated, setAuth, updateTokens, clearAuth } =
-        useAuthStore();
+    const { user, isAuthenticated, setAuth, clearAuth } = useAuthStore();
 
     return {
         user,
-        accessToken,
-        refreshToken,
         isAuthenticated,
-        isLoggedIn: !!accessToken,
+        isLoggedIn: isAuthenticated,
         setAuth,
-        updateTokens,
         logout: clearAuth,
     };
 }

@@ -4,6 +4,8 @@ import { logger } from "../utils/logger.js";
 /**
  * Analytics Consumer
  * Saves all events to MongoDB for activity log and metrics
+ * //using reportjs
+ * //using event model
  */
 export async function handleAnalytics(event) {
     const { type } = event;

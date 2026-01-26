@@ -9,23 +9,9 @@ export async function getMeController(req, res, next) {
     }
 }
 
-export async function getSessionsController(req, res, next) {
-    try {
-        const sessions = await service.getUserSessions(req.user._id);
-        res.json(sessions);
-    } catch (err) {
-        next(err);
-    }
-}
+// Sessions yönetimi /auth/sessions üzerinden yapılıyor (auth/controller.js)
 
-export async function logoutAllController(req, res, next) {
-    try {
-        await service.clearAllSessions(req.user._id);
-        res.json({ ok: true });
-    } catch (err) {
-        next(err);
-    }
-}
+// logout-all kaldırıldı - kullanılmıyordu
 
 export async function updateProfileController(req, res, next) {
     try {

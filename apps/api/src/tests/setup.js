@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { jest } from "@jest/globals";
 import { getRedisClient } from "../config/redis.js";
-import { connectRabbit } from "../config/rabbit.js";
+import { connectRabbit, closeRabbit } from "../config/rabbit.js";
 
 // Import all models to register schemas
 await import("../modules/users/repository.js");
@@ -9,8 +9,10 @@ await import("../modules/projects/repository.js");
 await import("../modules/tasks/repository.js");
 await import("../modules/auth/repository.js");
 
-// Use environment variables (will be set by Docker)
-const TEST_MONGO_URL = process.env.MONGO_URL || "mongodb://mongo:27017/taskboard_test";
+// IMPORTANT: Always use separate test database to prevent production data loss!
+// Never use MONGO_URL from environment for tests
+const MONGO_HOST = process.env.MONGO_HOST || "mongo";
+const TEST_MONGO_URL = `mongodb://${MONGO_HOST}:27017/taskboard_test`;
 const TEST_RABBIT_URL = process.env.RABBIT_URL || "amqp://rabbitmq:5672";
 
 jest.setTimeout(60000);
@@ -48,19 +50,17 @@ export async function closeTestDb() {
             await mongoose.connection.close();
         }
 
-        const redis = getRedisClient();
-        if (redis) await redis.quit();
+        // Redis may not be initialized in tests, handle gracefully
+        try {
+            const redis = getRedisClient();
+            if (redis) await redis.quit();
+        } catch {
+            // Redis not initialized, ignore
+        }
 
         // Close RabbitMQ connection
-        if (rabbitConnection) {
-            try {
-                await rabbitConnection.channel?.close();
-                await rabbitConnection.conn?.close();
-                console.log("RabbitMQ connection closed");
-            } catch (e) {
-                console.error("RabbitMQ close error:", e.message);
-            }
-        }
+        await closeRabbit();
+        rabbitConnection = null;
     } catch (e) {
         console.error("Teardown Error:", e.message);
     }

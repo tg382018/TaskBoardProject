@@ -20,9 +20,22 @@ export function loadSocket(server, { corsOrigins }) {
     // Auth Middleware for /realtime namespace
     realtimeNs.use(async (socket, next) => {
         try {
-            const token =
+            // Try to get token from: auth object, authorization header, or cookies
+            let token =
                 socket.handshake.auth?.token ||
                 socket.handshake.headers?.authorization?.split(" ")[1];
+
+            // If no token found, try to parse from cookies
+            if (!token && socket.handshake.headers?.cookie) {
+                const cookies = socket.handshake.headers.cookie.split(";");
+                for (const cookie of cookies) {
+                    const [name, value] = cookie.trim().split("=");
+                    if (name === "accessToken") {
+                        token = value;
+                        break;
+                    }
+                }
+            }
 
             if (!token) {
                 logger.warn("[socket] Auth failed: Token missing");

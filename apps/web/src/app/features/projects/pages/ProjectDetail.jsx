@@ -17,8 +17,9 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-} from "@packages/ui";
+} from "@/app/components/ui/alert-dialog";
 import { useAuth } from "@/app/hooks/use-auth";
+
 import { useDebouncedValue } from "@/app/hooks/use-debounced-value";
 import { useToast } from "@/app/hooks/use-toast";
 import { useSocket } from "@/app/hooks/use-socket";

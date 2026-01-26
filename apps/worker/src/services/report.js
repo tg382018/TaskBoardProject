@@ -5,7 +5,6 @@ import { EventLog } from "../models/event.model.js";
  * Report/Analytics Service
  */
 
-// In-memory stats stub (aligning with current logic)
 const stats = {
     events: 0,
     byType: {},

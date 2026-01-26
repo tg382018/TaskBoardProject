@@ -8,6 +8,7 @@ import ProjectsList from "@/app/features/projects/pages/ProjectsList";
 import ProjectDetail from "@/app/features/projects/pages/ProjectDetail";
 import TaskDetail from "@/app/features/tasks/pages/TaskDetail";
 import ProfilePage from "@/app/features/profile/pages/Profile";
+import DocsPage from "@/app/features/docs/Docs";
 import { DailySummaryWidget } from "@/app/components/widgets/DailySummaryWidget";
 import { UserStatsWidget } from "@/app/components/widgets/UserStatsWidget";
 import { PageHeader } from "@/app/components/common/page-header";
@@ -45,6 +46,7 @@ export default function AppRoutes() {
                 <Route path="/profile" element={<ProfilePage />} />
             </Route>
 
+            <Route path="/docs-public" element={<DocsPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
     );

@@ -19,6 +19,7 @@ RUN pnpm build --filter @apps/web
 # Production stage
 FROM nginx:alpine
 COPY --from=builder /app/apps/web/dist /usr/share/nginx/html
+COPY --from=builder /app/docs /usr/share/nginx/html/docs
 COPY apps/web/nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
