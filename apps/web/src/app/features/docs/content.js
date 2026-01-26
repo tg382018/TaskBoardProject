@@ -524,4 +524,387 @@ Beyond just messages, the job computes a set of high-level statistics:
 > [!NOTE]
 > Summaries are stored in a **ready-to-serve** format, allowing the frontend to display rich activity feeds without complex server-side joins.`,
     },
+    // ==================== FRONTEND DOCS ====================
+    {
+        id: "frontend-overview",
+        title: "Frontend Overview",
+        category: "Frontend Core",
+        content: `# 🏗️ Frontend Architecture Overview
+
+The TaskBoard frontend is a modern **React 19** application built with **Vite**, featuring real-time updates, optimistic UI patterns, and a component-driven architecture designed for maximum developer productivity and user experience.
+
+---
+
+## 🎯 Design Philosophy
+
+TaskBoard's frontend follows these core principles:
+
+1. **Feature-First Organization** - Code is organized by business domain, not by technical role
+2. **Colocation** - Related files (components, hooks, tests) live together
+3. **Shared Core** - Common utilities extracted to \`@packages/ui\` and \`@packages/common\`
+4. **Real-time First** - Socket.io integration baked into the architecture from day one
+
+---
+
+## ⚡ Tech Stack
+
+| Technology | Version | Purpose |
+| :--- | :--- | :--- |
+| **React** | 19.x | UI Framework with concurrent rendering |
+| **Vite** | 6.x | Lightning-fast HMR and optimized builds |
+| **React Router** | 7.x | Declarative client-side routing |
+| **TanStack Query** | 5.x | Async state management with caching |
+| **Zustand** | 5.x | Lightweight global state |
+| **Socket.io Client** | 4.x | WebSocket abstraction for real-time |
+| **Tailwind CSS** | 4.x | Utility-first styling |
+| **Formik + Yup** | - | Form management and validation |
+| **Lucide React** | - | Icon library |
+| **date-fns** | - | Date manipulation |
+
+---
+
+## 📊 Data Flow Architecture
+
+![Frontend Data Flow](/docs/images/frontend/frontend-data.png)
+
+---
+
+## 🔄 Provider Hierarchy
+
+![Provider Hierarchy](/docs/images/frontend/provider-hierarchy.png)
+
+> [!IMPORTANT]
+> **Order matters!** QueryClientProvider must wrap SocketProvider so socket events can trigger query invalidations.
+
+---
+
+## 🎨 Styling Approach
+
+TaskBoard uses **Tailwind CSS 4** with a custom design system:
+
+### Color Tokens
+- \`--primary\` - Brand color (indigo)
+- \`--secondary\` - Supporting color
+- \`--destructive\` - Error/delete actions
+- \`--muted\` - Subtle backgrounds
+
+### Dark Mode
+Managed by \`ThemeProvider\` with localStorage persistence:
+\`\`\`jsx
+<ThemeProvider defaultTheme="dark" storageKey="taskboard-theme">
+\`\`\`
+
+---
+
+## 🔗 Package Imports
+
+| Source | Usage |
+| :--- | :--- |
+| \`@packages/ui\` | Button, Card, Dialog, Input, Table, etc. |
+| \`@packages/common/constants\` | TaskStatus, TaskPriority enums |
+| \`@packages/common/schemas\` | Validation schemas (shared with backend) |
+| \`@/app/components/ui\` | App-specific: AlertDialog, Select, Toast |
+| \`@/app/hooks\` | useAuth, useSocket, useToast |
+
+> [!TIP]
+> The \`@\` alias is configured in \`vite.config.js\` to point to \`src/app/\`.
+
+---
+
+## 🚀 Development Commands
+
+| Command | Description |
+| :--- | :--- |
+| \`pnpm dev\` | Start dev server (HMR enabled) |
+| \`pnpm build\` | Production build |
+| \`pnpm preview\` | Preview production build |
+| \`pnpm test\` | Run tests with Vitest |
+| \`pnpm lint\` | ESLint check |
+
+---
+
+## 📈 Performance Optimizations
+
+1. **Code Splitting** - Routes are lazily loaded
+2. **Query Caching** - TanStack Query caches API responses
+3. **Optimistic Updates** - UI updates before server confirms
+4. **Delta Updates** - Socket sends only changed data
+5. **Debounced Search** - Prevents excessive API calls
+
+> [!NOTE]
+> The production bundle is ~930KB gzipped to ~288KB, with opportunities for further splitting.`,
+    },
+    {
+        id: "frontend-routing",
+        title: "Routing & Navigation",
+        category: "Frontend Core",
+        content: `# 🧭 Routing & Navigation
+
+TaskBoard uses **React Router v7** with protected routes and layout-based organization.
+
+---
+
+## 📍 Route Table
+
+| Path | Component | Auth Required |
+| :--- | :--- | :--- |
+| \`/login\` | Login | ❌ |
+| \`/register\` | Register | ❌ |
+| \`/dashboard\` | Dashboard | ✅ |
+| \`/projects\` | ProjectsList | ✅ |
+| \`/projects/:id\` | ProjectDetail | ✅ |
+| \`/tasks/:id\` | TaskDetail | ✅ |
+| \`/profile\` | Profile | ✅ |
+| \`/docs\` | Documentation | ❌ |
+
+---
+
+## 🛡️ Protected Routes
+
+Routes requiring authentication are wrapped with a guard that:
+1. Checks for valid session cookies
+2. Redirects to \`/login\` if unauthorized
+3. Preserves the intended destination for post-login redirect
+
+> [!NOTE]
+> Authentication state is managed by Zustand store and synced with cookie-based sessions.`,
+    },
+    {
+        id: "frontend-state",
+        title: "State Management",
+        category: "Frontend Core",
+        content: `# 📊 State Management
+
+TaskBoard uses a **hybrid state strategy** combining Zustand for client state and TanStack Query for server state.
+
+---
+
+## 🔄 TanStack Query Patterns
+
+- **Automatic caching** with configurable stale times
+- **Background refetching** for fresh data
+- **Optimistic updates** for instant UI feedback
+- **Query invalidation** on mutations
+
+> [!TIP]
+> Socket events trigger \`queryClient.invalidateQueries()\` for real-time sync without polling.`,
+    },
+    {
+        id: "frontend-auth",
+        title: "Authentication Flow",
+        category: "Frontend Features",
+        content: `# 🔐 Authentication Flow
+
+The frontend implements a secure **cookie-based authentication** flow with OTP verification.
+
+---
+
+## 🔄 Login Steps
+
+1. User submits email/password
+2. API validates and sends OTP via email
+3. User enters OTP code
+4. API sets httpOnly cookies (accessToken, refreshToken)
+5. User redirected to dashboard
+
+---
+
+## 🍪 Cookie-Based Security
+
+| Cookie | Purpose | Flags |
+| :--- | :--- | :--- |
+| \`accessToken\` | API authorization | httpOnly, secure, sameSite |
+| \`refreshToken\` | Token refresh | httpOnly, secure, sameSite |
+
+> [!IMPORTANT]
+> Tokens are **never** stored in localStorage, preventing XSS attacks from stealing credentials.`,
+    },
+    {
+        id: "frontend-realtime",
+        title: "Real-time Updates",
+        category: "Frontend Features",
+        content: `# ⚡ Real-time Updates
+
+TaskBoard uses **Socket.io** for instant data synchronization across all connected clients.
+
+---
+
+## 🔌 Socket Provider
+
+The \`SocketProvider\` establishes and manages the WebSocket connection:
+- Authenticates via cookie on connect
+- Manages reconnection logic
+- Provides socket instance via context
+
+---
+
+## 📡 Socket Events
+
+| Event | Trigger | UI Effect |
+| :--- | :--- | :--- |
+| \`task.created\` | New task added | Refresh task list |
+| \`task.updated\` | Task modified | Update task in place |
+| \`comment.added\` | New comment | Append to comments |
+| \`project.member.added\` | Member invited | Refresh member list |
+
+> [!TIP]
+> Joining a project room (\`socket.emit("project:join", id)\`) subscribes to all its events.`,
+    },
+    {
+        id: "frontend-components",
+        title: "UI Components",
+        category: "Frontend UI",
+        content: `# 🎨 UI Components
+
+TaskBoard uses a layered component architecture with shared and app-specific components.
+
+---
+
+## 📦 Shared Components (@packages/ui)
+
+Reusable across the entire monorepo:
+
+| Component | Description |
+| :--- | :--- |
+| \`Button\` | Primary, secondary, ghost variants |
+| \`Card\` | Container with header/content/footer |
+| \`Dialog\` | Modal dialogs |
+| \`Input\` / \`Label\` | Form inputs |
+| \`Table\` | Data tables |
+| \`Badge\` | Status indicators |
+| \`Skeleton\` | Loading placeholders |
+
+---
+
+## 🎯 App-Specific Components
+
+Located in \`apps/web/src/app/components/ui/\`:
+
+| Component | Description |
+| :--- | :--- |
+| \`AlertDialog\` | Confirmation dialogs |
+| \`DropdownMenu\` | Context menus |
+| \`Select\` | Dropdown selects |
+| \`Toast\` | Notifications |
+
+---
+
+## 📊 Widgets
+
+Dashboard widgets in \`components/widgets/\`:
+- **UserStatsWidget** - User productivity stats
+- **DailySummaryWidget** - Daily activity feed
+
+> [!NOTE]
+> Shared components are imported from \`@packages/ui\`, app-specific from \`@/app/components/ui\`.`,
+    },
+    // ==================== PACKAGES DOCS ====================
+    {
+        id: "packages-overview",
+        title: "Packages Overview",
+        category: "Packages",
+        content: `# 📦 Shared Packages Architecture
+
+TaskBoard uses a **monorepo** structure with shared packages to ensure consistency across applications.
+
+---
+
+## 📊 Package Overview
+
+![Packages Overview](/docs/images/frontend/packages-overview.png)
+
+---
+
+## 🔗 Import Paths
+
+| Package | Import Path |
+| :--- | :--- |
+| UI Components | \`@packages/ui\` |
+| Schemas | \`@packages/common/schemas\` |
+| Constants | \`@packages/common/constants\` |
+
+> [!TIP]
+> Shared validation schemas ensure frontend and backend enforce identical rules.`,
+    },
+    {
+        id: "packages-ui",
+        title: "@packages/ui",
+        category: "Packages",
+        content: `# 🎨 @packages/ui - Component Library
+
+A collection of **shadcn/ui** based components shared across the frontend.
+
+---
+
+## 📦 Available Components (10)
+
+| Component | File | Description |
+| :--- | :--- | :--- |
+| **Button** | \`button.jsx\` | Multiple variants & sizes |
+| **Badge** | \`badge.jsx\` | Status indicators |
+| **Card** | \`card.jsx\` | Container with sections |
+| **Dialog** | \`dialog.jsx\` | Modal windows |
+| **Input** | \`input.jsx\` | Text input |
+| **Label** | \`label.jsx\` | Form labels |
+| **ScrollArea** | \`scroll-area.jsx\` | Custom scrollbar |
+| **Sheet** | \`sheet.jsx\` | Side panels |
+| **Skeleton** | \`skeleton.jsx\` | Loading state |
+| **Table** | \`table.jsx\` | Data tables |
+
+---
+
+## 🛠️ Utilities
+
+### cn() - Class Name Merger
+\`\`\`javascript
+import { cn } from "@packages/ui";
+
+cn("base-class", condition && "conditional-class")
+\`\`\`
+
+> [!NOTE]
+> Components are built on **Radix UI** primitives with **Tailwind CSS** styling.`,
+    },
+    {
+        id: "packages-common",
+        title: "@packages/common",
+        category: "Packages",
+        content: `# 🔗 @packages/common - Shared Logic
+
+Validation schemas and constants shared between frontend and backend.
+
+---
+
+## 📋 Validation Schemas
+
+| Schema | File | Used In |
+| :--- | :--- | :--- |
+| \`authSchema\` | \`auth.schema.js\` | Login, Register, OTP |
+| \`taskSchema\` | \`task.schema.js\` | Task CRUD |
+| \`projectSchema\` | \`project.schema.js\` | Project CRUD |
+| \`commentSchema\` | \`comment.schema.js\` | Comments |
+| \`userSchema\` | \`user.schema.js\` | Profile updates |
+
+---
+
+## 🎯 Constants
+
+\`\`\`javascript
+// constants.js
+export const TaskStatus = {
+  TODO: "Todo",
+  IN_PROGRESS: "InProgress",
+  DONE: "Done"
+};
+
+export const TaskPriority = {
+  LOW: "Low",
+  MEDIUM: "Medium",
+  HIGH: "High"
+};
+\`\`\`
+
+> [!IMPORTANT]
+> Using shared constants prevents frontend/backend enum mismatches.`,
+    },
 ];

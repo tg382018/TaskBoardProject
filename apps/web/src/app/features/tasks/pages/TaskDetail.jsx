@@ -4,10 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { tasksApi } from "@/app/api/tasks.api";
 import { projectsApi } from "@/app/api/projects.api";
 import { useAuth } from "@/app/hooks/use-auth";
-import { Button } from "@packages/ui";
-import { Badge } from "@packages/ui";
-import { Input } from "@packages/ui";
-import { Label } from "@packages/ui";
+import { Button, Badge, Input, Label } from "@packages/ui";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -15,7 +12,7 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-} from "@packages/ui";
+} from "@/app/components/ui/dropdown-menu";
 import { ChevronLeft, Send, Clock, User as UserIcon, UserPlus, Check } from "lucide-react";
 import { format } from "date-fns";
 import { useSocketEvent } from "@/app/hooks/use-socket-event";
@@ -29,7 +26,7 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-} from "@packages/ui";
+} from "@/app/components/ui/alert-dialog";
 import { TaskStatus } from "@packages/common/constants";
 
 import { CommentList } from "../components/CommentList";

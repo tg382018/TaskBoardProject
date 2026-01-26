@@ -1,0 +1,576 @@
+{
+    "info": {
+        "_postman_id": "taskboard-api-collection",
+        "name": "TaskBoard API",
+        "description": "Complete API collection for TaskBoard project management application.\n\n## Quick Start\n1. Import this collection into Postman\n2. Import the environment file (TaskBoard-Local.postman_environment.json)\n3. Run 'Register' or 'Login' to get authenticated\n4. Cookies will be automatically managed\n\n## Features\n- Cookie-based authentication (accessToken, refreshToken)\n- Full CRUD for Projects, Tasks, Comments\n- Real-time events via Socket.io",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost/api",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "Auth",
+            "description": "Authentication endpoints for user registration, login, OTP verification, and session management.",
+            "item": [
+                {
+                    "name": "Register",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"user@example.com\",\n    \"password\": \"password123\",\n    \"name\": \"John Doe\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/register",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["auth", "register"]
+                        },
+                        "description": "Register a new user. An OTP will be sent to the email address.\n\n**Required Fields:**\n- email (valid email format)\n- password (min 6 characters)\n- name (min 2 characters)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Login",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"user@example.com\",\n    \"password\": \"password123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/login",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["auth", "login"]
+                        },
+                        "description": "Login with email and password. An OTP will be sent for verification.\n\n**Required Fields:**\n- email\n- password"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Resend OTP",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"user@example.com\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/resend",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["auth", "resend"]
+                        },
+                        "description": "Resend OTP to email address.\n\n**Rate Limited:** 5 requests per 5 minutes"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Verify OTP",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"user@example.com\",\n    \"code\": \"123456\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/verify",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["auth", "verify"]
+                        },
+                        "description": "Verify OTP code. On success, cookies will be set:\n- accessToken (15 min)\n- refreshToken (7 days)\n\n**Required Fields:**\n- email\n- code (6 digits)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Refresh Token",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"refreshToken\": \"{{refreshToken}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/refresh",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["auth", "refresh"]
+                        },
+                        "description": "Refresh access token using refresh token. Can also read from cookies."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Logout",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/logout",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["auth", "logout"]
+                        },
+                        "description": "Logout and clear authentication cookies."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Sessions",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/sessions",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["auth", "sessions"]
+                        },
+                        "description": "Get all active sessions for current user.\n\n**Requires Authentication**"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Revoke Session",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/sessions/{{sessionId}}",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["auth", "sessions", "{{sessionId}}"]
+                        },
+                        "description": "Revoke a specific session by ID.\n\n**Requires Authentication**"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "[Dev] Get OTP",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/dev/otp/user@example.com",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["auth", "dev", "otp", "user@example.com"]
+                        },
+                        "description": "**Development Only**\n\nGet the current OTP for an email address. Useful for testing without email."
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Users",
+            "description": "User profile and statistics endpoints.",
+            "item": [
+                {
+                    "name": "Get Profile",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/users/me",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["users", "me"]
+                        },
+                        "description": "Get current user's profile information.\n\n**Requires Authentication**"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update Profile",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"John Updated\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/users/me",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["users", "me"]
+                        },
+                        "description": "Update current user's profile.\n\n**Requires Authentication**\n\n**Fields:**\n- name (2-50 characters)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Daily Summary",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/users/daily-summary",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["users", "daily-summary"]
+                        },
+                        "description": "Get daily activity summary for current user.\n\n**Requires Authentication**"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Stats",
+            "description": "User statistics endpoints.",
+            "item": [
+                {
+                    "name": "Get My Stats",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/stats/me",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["stats", "me"]
+                        },
+                        "description": "Get comprehensive statistics for current user.\n\n**Requires Authentication**"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Projects",
+            "description": "Project management endpoints.",
+            "item": [
+                {
+                    "name": "List Projects",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/projects",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["projects"]
+                        },
+                        "description": "List all projects the user has access to.\n\n**Requires Authentication**"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Project",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"title\": \"My New Project\",\n    \"description\": \"Project description here\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/projects",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["projects"]
+                        },
+                        "description": "Create a new project.\n\n**Requires Authentication**\n\n**Required Fields:**\n- title (3-100 characters)\n\n**Optional Fields:**\n- description (max 500 characters)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Project",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/projects/{{projectId}}",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["projects", "{{projectId}}"]
+                        },
+                        "description": "Get project details by ID.\n\n**Requires Authentication**"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update Project",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"title\": \"Updated Project Title\",\n    \"description\": \"Updated description\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/projects/{{projectId}}",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["projects", "{{projectId}}"]
+                        },
+                        "description": "Update project details.\n\n**Requires Authentication** (Owner only)\n\n**Fields:**\n- title (3-100 characters)\n- description (max 500 characters)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Delete Project",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/projects/{{projectId}}",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["projects", "{{projectId}}"]
+                        },
+                        "description": "Delete a project.\n\n**Requires Authentication** (Owner only)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Add Member",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"member@example.com\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/projects/{{projectId}}/members",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["projects", "{{projectId}}", "members"]
+                        },
+                        "description": "Add a member to project by email.\n\n**Requires Authentication** (Owner only)\n\n**Required Fields:**\n- email (valid email format)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Project Logs",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/projects/{{projectId}}/logs",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["projects", "{{projectId}}", "logs"]
+                        },
+                        "description": "Get activity logs for a project.\n\n**Requires Authentication**"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Tasks",
+            "description": "Task management endpoints.",
+            "item": [
+                {
+                    "name": "List Tasks",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/tasks?projectId={{projectId}}",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["tasks"],
+                            "query": [
+                                {
+                                    "key": "projectId",
+                                    "value": "{{projectId}}"
+                                },
+                                {
+                                    "key": "status",
+                                    "value": "Todo",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "priority",
+                                    "value": "High",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "search",
+                                    "value": "",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "sortBy",
+                                    "value": "createdAt",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "sortOrder",
+                                    "value": "desc",
+                                    "disabled": true
+                                }
+                            ]
+                        },
+                        "description": "List tasks with optional filters.\n\n**Requires Authentication**\n\n**Query Parameters:**\n- projectId (required)\n- status: Todo | InProgress | Done\n- priority: Low | Medium | High\n- search: text search\n- sortBy: field to sort by\n- sortOrder: asc | desc"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Task",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"title\": \"New Task\",\n    \"description\": \"Task description\",\n    \"projectId\": \"{{projectId}}\",\n    \"priority\": \"Medium\",\n    \"tags\": [\"feature\", \"urgent\"]\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/tasks",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["tasks"]
+                        },
+                        "description": "Create a new task.\n\n**Requires Authentication**\n\n**Required Fields:**\n- title (3-200 characters)\n- projectId (MongoDB ObjectId)\n\n**Optional Fields:**\n- description (max 1000 characters)\n- assigneeId (MongoDB ObjectId)\n- priority: Low | Medium | High (default: Medium)\n- tags: array of strings (max 10)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Task",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/tasks/{{taskId}}",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["tasks", "{{taskId}}"]
+                        },
+                        "description": "Get task details by ID.\n\n**Requires Authentication**"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update Task",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"title\": \"Updated Task Title\",\n    \"status\": \"InProgress\",\n    \"priority\": \"High\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/tasks/{{taskId}}",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["tasks", "{{taskId}}"]
+                        },
+                        "description": "Update task details.\n\n**Requires Authentication**\n\n**Fields:**\n- title (3-200 characters)\n- description (max 1000 characters)\n- status: Todo | InProgress | Done\n- priority: Low | Medium | High\n- assigneeId (MongoDB ObjectId)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Delete Task",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/tasks/{{taskId}}",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["tasks", "{{taskId}}"]
+                        },
+                        "description": "Delete a task.\n\n**Requires Authentication**"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Comments",
+            "description": "Task comment endpoints.",
+            "item": [
+                {
+                    "name": "List Comments",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/comments?taskId={{taskId}}",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["comments"],
+                            "query": [
+                                {
+                                    "key": "taskId",
+                                    "value": "{{taskId}}"
+                                }
+                            ]
+                        },
+                        "description": "List comments for a task.\n\n**Requires Authentication**\n\n**Query Parameters:**\n- taskId (required)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Comment",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"content\": \"This is a comment on the task.\",\n    \"taskId\": \"{{taskId}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/comments",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["comments"]
+                        },
+                        "description": "Add a comment to a task.\n\n**Requires Authentication**\n\n**Required Fields:**\n- content (1-1000 characters)\n- taskId (MongoDB ObjectId)"
+                    },
+                    "response": []
+                }
+            ]
+        }
+    ]
+}

@@ -1,6 +1,6 @@
 # 💬 Real-time Comments & Feedback Module
 
-The Comments module enables seamless collaboration within TaskBoard. It provides a structured, high-concurrency engine for threaded discussions and feedback loops, powered by instant synchronization.
+The Comments module enables seamless collaboration within TaskBoard. It provides a structured, high-concurrency engine for task discussions and feedback loops, powered by instant synchronization.
 
 ---
 
@@ -31,14 +31,40 @@ This module is a heavy user of the **Socket Bridge Pattern**:
 
 ## 🔐 Technical Implementation Details
 
-| Feature           | Implementation               | Side Effect                            |
-| :---------------- | :--------------------------- | :------------------------------------- |
-| **Post Comment**  | REST POST `/comments`        | Emits `comment.created` to Socket Room |
-| **History Fetch** | REST GET `/comments/:taskId` | Paginated retrieval from MongoDB       |
-| **Edit/Delete**   | REST PATCH/DELETE `/:id`     | Syncs state change to all clients      |
+| Feature           | Implementation             | Side Effect                            |
+| :---------------- | :------------------------- | :------------------------------------- |
+| **Post Comment**  | `POST /comments`           | Emits `comment.created` to Socket Room |
+| **List Comments** | `GET /comments?taskId=xxx` | Retrieves comments for a specific task |
 
-> [!IMPORTANT]
-> **Audit Integrity:** To maintain accountability, comments are linked to the `authorId`, which is automatically resolved from the secure JWT session, preventing users from spoofing identities.
+> [!NOTE]
+> **Current Limitations:** Edit and delete operations for comments are not yet implemented. Comments are currently immutable after creation.
+
+---
+
+## 📡 API Endpoints
+
+| Endpoint    | Method | Description                                   | Auth Required |
+| ----------- | ------ | --------------------------------------------- | ------------- |
+| `/comments` | POST   | Create a new comment                          | ✅            |
+| `/comments` | GET    | List comments (requires `taskId` query param) | ✅            |
+
+### Request/Response Examples
+
+**Create Comment:**
+
+```json
+// POST /comments
+{
+    "content": "This is a comment on the task.",
+    "taskId": "507f1f77bcf86cd799439011"
+}
+```
+
+**List Comments:**
+
+```
+GET /comments?taskId=507f1f77bcf86cd799439011
+```
 
 ---
 

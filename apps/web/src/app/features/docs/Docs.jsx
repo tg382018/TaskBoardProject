@@ -40,6 +40,16 @@ export default function DocsPage() {
             icon: <Cpu className="h-4 w-4" />,
             categories: ["Worker System", "Worker Consumers", "Worker Jobs", "Worker Models"],
         },
+        {
+            title: "Frontend",
+            icon: <Activity className="h-4 w-4" />,
+            categories: ["Frontend Core", "Frontend Features", "Frontend UI"],
+        },
+        {
+            title: "Packages",
+            icon: <Network className="h-4 w-4" />,
+            categories: ["Packages"],
+        },
     ];
 
     return (

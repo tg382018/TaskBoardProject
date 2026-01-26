@@ -14,20 +14,52 @@ To enhance security, TaskBoard uses a **One-Time Password (OTP)** system for log
 
 - **Step 1:** User submits credentials (email/password). The system validates the hash and publishes an `auth.login` event.
 - **Background:** The Worker Service consumes the event, generates a 6-digit OTP, stores it in **Redis** with a 3-minute TTL, and sends it to the user's email.
-- **Step 2:** The user submits the OTP. The API validates it against Redis. Upon success, the OTP is immediatey deleted (Burn-on-use).
+- **Step 2:** The user submits the OTP. The API validates it against Redis. Upon success, the OTP is immediately deleted (Burn-on-use).
 
-### 3. Session & Token Management
+### 3. Cookie-Based Token Management
 
-The system uses a stateful JWT approach for maximum security:
+> [!IMPORTANT]
+> **Security Enhancement:** TaskBoard uses **httpOnly cookies** for token storage instead of localStorage, providing robust protection against XSS attacks.
 
-- **Access Token:** Short-lived (15 minutes) token for API authorization.
-- **Refresh Token:** Long-lived (7 days) token stored in a dedicated `Sessions` collection in MongoDB.
-- **Token Rotation:** Every time a token is refreshed, the old session is invalidated and a new pair is issued, preventing replay attacks.
+The system uses a stateful JWT approach with secure cookie delivery:
 
-### 4. Security Middlewares
+| Token             | Lifetime   | Storage               | Flags                                    |
+| ----------------- | ---------- | --------------------- | ---------------------------------------- |
+| **Access Token**  | 15 minutes | `accessToken` cookie  | `httpOnly`, `secure`, `sameSite: strict` |
+| **Refresh Token** | 7 days     | `refreshToken` cookie | `httpOnly`, `secure`, `sameSite: strict` |
 
-- **Rate Limiting:** Protects sensitive auth endpoints from brute-force and DDoS attacks using Redis-backed counters.
-- **Validation:** Strict schema validation for all incoming requests using Joi/Zod to prevent injection and malformed data.
+**Key Security Features:**
+
+- **No Client-Side Storage:** Tokens are never exposed to JavaScript, eliminating XSS token theft.
+- **Automatic Transmission:** Cookies are automatically sent with every request by the browser.
+- **Session Tracking:** Refresh tokens are stored in a dedicated `Sessions` collection in MongoDB for revocation support.
+- **Token Rotation:** Every refresh operation invalidates the old session and issues a new pair, preventing replay attacks.
+
+### 4. Multi-Device Session Management
+
+Users can manage their active sessions across devices:
+
+- `GET /auth/sessions` - List all active sessions
+- `DELETE /auth/sessions/:id` - Revoke a specific session
+
+### 5. Security Middlewares
+
+- **Rate Limiting:** Protects sensitive auth endpoints (register, login, resend OTP) from brute-force attacks using Redis-backed counters. Limit: 5 requests per 5 minutes.
+- **Validation:** Strict JSON Schema validation using **Ajv** for all incoming requests to prevent injection and malformed data.
+
+## 📡 API Endpoints
+
+| Endpoint               | Method | Description                    | Auth Required    |
+| ---------------------- | ------ | ------------------------------ | ---------------- |
+| `/auth/register`       | POST   | Register new user              | ❌               |
+| `/auth/login`          | POST   | Login and request OTP          | ❌               |
+| `/auth/resend`         | POST   | Resend OTP                     | ❌               |
+| `/auth/verify`         | POST   | Verify OTP and get tokens      | ❌               |
+| `/auth/refresh`        | POST   | Refresh access token           | ❌ (uses cookie) |
+| `/auth/logout`         | POST   | Clear cookies and end session  | ❌               |
+| `/auth/sessions`       | GET    | List active sessions           | ✅               |
+| `/auth/sessions/:id`   | DELETE | Revoke a session               | ✅               |
+| `/auth/dev/otp/:email` | GET    | [Dev only] Get OTP for testing | ❌               |
 
 ## 📊 Flow Diagrams
 

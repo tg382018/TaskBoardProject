@@ -15,29 +15,80 @@ Management of task data is handled with strict schema validation. Every task is 
 
 ### 🔹 2. Dynamic Status & Priority
 
-- **Workflow State:** Tasks follow a customizable lifecycle (To Do -> In Progress -> Done).
-- **Prioritization:** Native support for priority weighting to help teams focus on high-impact work.
-- **Assignments:** Real-time assignment logic that notifies users the moment they are added to a task.
+- **Workflow State:** Tasks follow a defined lifecycle with three states:
+    - `Todo` - Not started
+    - `InProgress` - Currently being worked on
+    - `Done` - Completed
+- **Prioritization:** Three priority levels for task weighting:
+    - `Low` - Lower priority items
+    - `Medium` - Default priority
+    - `High` - Urgent items requiring immediate attention
+- **Assignments:** Real-time assignment logic that notifies users when they are added to a task.
+- **Tags:** Support for up to 10 custom tags per task for organization.
 
 ### 🔹 3. Instant Real-time Synchronization
 
 The Tasks module is the primary consumer of the **Socket Bridge**.
 
-- **Broadcast:** Every update (name change, status move, or comment) triggers an immediate project-wide broadcast.
+- **Broadcast:** Every update (title change, status move, or assignment) triggers an immediate project-wide broadcast.
 - **Deltas:** Instead of reloading the page, the frontend receives specific event deltas, making the UI feel like a native desktop application.
 
 ---
 
 ## 🔐 Technical Implementation Details
 
-| Feature            | Implementation           | Socket Event    |
-| :----------------- | :----------------------- | :-------------- |
-| **Status Change**  | REST PATCH `/:id/status` | `task.updated`  |
-| **New Assignment** | REST PATCH `/:id`        | `task.assigned` |
-| **Deletion**       | REST DELETE `/:id`       | `task.deleted`  |
+| Feature         | Implementation      | Socket Event   |
+| :-------------- | :------------------ | :------------- |
+| **Create Task** | `POST /tasks`       | `task.created` |
+| **List Tasks**  | `GET /tasks`        | -              |
+| **Get Task**    | `GET /tasks/:id`    | -              |
+| **Update Task** | `PATCH /tasks/:id`  | `task.updated` |
+| **Delete Task** | `DELETE /tasks/:id` | `task.deleted` |
 
 > [!IMPORTANT]
 > **Ownership & Permission:** A task can only be modified by members of the parent project. Unauthorized attempts are rejected at the middleware level with a `403 Forbidden` status.
+
+---
+
+## 📡 API Endpoints
+
+| Endpoint     | Method | Description                                        | Auth Required |
+| ------------ | ------ | -------------------------------------------------- | ------------- |
+| `/tasks`     | POST   | Create a new task                                  | ✅            |
+| `/tasks`     | GET    | List tasks (filter by projectId, status, priority) | ✅            |
+| `/tasks/:id` | GET    | Get task details                                   | ✅            |
+| `/tasks/:id` | PATCH  | Update task (title, status, priority, assignee)    | ✅            |
+| `/tasks/:id` | DELETE | Delete a task                                      | ✅            |
+
+### Request/Response Examples
+
+**Create Task:**
+
+```json
+// POST /tasks
+{
+    "title": "Implement login page",
+    "description": "Create the login form with validation",
+    "projectId": "507f1f77bcf86cd799439011",
+    "priority": "High",
+    "tags": ["frontend", "auth"]
+}
+```
+
+**Update Task Status:**
+
+```json
+// PATCH /tasks/:id
+{
+    "status": "InProgress"
+}
+```
+
+**List Tasks with Filters:**
+
+```
+GET /tasks?projectId=xxx&status=Todo&priority=High
+```
 
 ---
 

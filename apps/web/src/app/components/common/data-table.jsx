@@ -9,7 +9,7 @@ import {
     DropdownMenuCheckboxItem,
     DropdownMenuContent,
     DropdownMenuTrigger,
-} from "@packages/ui";
+} from "@/app/components/ui/dropdown-menu";
 import { ArrowUpDown, ArrowUp, ArrowDown, Settings2 } from "lucide-react";
 
 export function DataTable({

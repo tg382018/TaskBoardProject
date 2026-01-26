@@ -1,6 +1,6 @@
 # 👤 Users & Profiles Module
 
-The Users module serves as the central identity and personalization layer of TaskBoard. It manages user metadata, profile preferences, and system-wide productivity statistics.
+The Users module serves as the central identity and personalization layer of TaskBoard. It manages user metadata, profile preferences, and daily activity summaries.
 
 ---
 
@@ -8,38 +8,62 @@ The Users module serves as the central identity and personalization layer of Tas
 
 ### 🔹 1. Profile Management
 
-Users can manage their digital identity with built-in safeguards. The module handles profile updates, avatar orchestration, and preference persistence.
+Users can manage their digital identity with built-in safeguards. The module handles profile updates with strict validation.
 
 > [!TIP]
 > **Privacy First:** Sensitive data (like email addresses) is handled with strict access control, ensuring that user information is only visible to authorized project members when collaboration requires it.
 
-### 🔹 2. Productivity Analytics
+> [!IMPORTANT]
+> **Security Enhancement:** User password hashes are automatically stripped from all API responses using Mongoose `toJSON` transforms, preventing accidental data exposure.
 
-The system tracks high-level user activity to generate personal productivity insights:
+### 🔹 2. Daily Summary
 
-- **Task completion rates:** Historical data on how many tasks a user finishes.
-- **Engagement metrics:** Tracking comments and project contributions.
-- **Data Source:** Statistics are aggregated from **MongoDB** and optimized for retrieval via **Redis caching**.
+The system provides personalized daily activity summaries for users:
+
+- **Task Overview:** Summary of tasks assigned, completed, and in progress
+- **Project Activity:** Recent changes across user's projects
+- **Engagement Metrics:** Tracking comments and contributions
 
 ### 🔹 3. Identity Verification & Lifecycle
 
 Beyond simple profile edits, the module integrates with the security kernel:
 
-- **Verification Status:** Tracking if a user has completed the two-step verification process.
-- **Account Recovery:** Hooks for managing account-level changes following secure OTP verification.
+- **Verification Status:** Tracking if a user has completed the two-step OTP verification process.
+- **Cookie-Based Sessions:** Profile data is resolved from the secure `accessToken` cookie.
 
 ---
 
 ## 🔐 Technical Implementation Details
 
-| Feature            | Implementation             | Side Effects                    |
-| :----------------- | :------------------------- | :------------------------------ |
-| **Profile Update** | REST PATCH `/users/me`     | Updates JWT if metadata changes |
-| **Get Statistics** | REST GET `/users/me/stats` | Triggers Redis Cache check      |
-| **Self Deletion**  | REST DELETE `/users/me`    | Publishes `user.deleted` event  |
+| Feature            | Implementation             | Description                           |
+| :----------------- | :------------------------- | :------------------------------------ |
+| **Get Profile**    | `GET /users/me`            | Returns current user's profile data   |
+| **Update Profile** | `PATCH /users/me`          | Updates user name (2-50 chars)        |
+| **Daily Summary**  | `GET /users/daily-summary` | Returns personalized activity summary |
 
-> [!IMPORTANT]
-> **State Consistency:** When a user profile is updated, the **Socket Bridge** may be used to propagate the new "Display Name" or "Avatar" to any active project rooms the user is currently collaborating in.
+> [!NOTE]
+> **Statistics Endpoint:** User statistics are available via the dedicated Stats module at `GET /stats/me`.
+
+---
+
+## 📡 API Endpoints
+
+| Endpoint               | Method | Description                | Auth Required |
+| ---------------------- | ------ | -------------------------- | ------------- |
+| `/users/me`            | GET    | Get current user profile   | ✅            |
+| `/users/me`            | PATCH  | Update profile (name)      | ✅            |
+| `/users/daily-summary` | GET    | Get daily activity summary | ✅            |
+
+### Request/Response Examples
+
+**Update Profile:**
+
+```json
+// PATCH /users/me
+{
+    "name": "John Updated"
+}
+```
 
 ---
 

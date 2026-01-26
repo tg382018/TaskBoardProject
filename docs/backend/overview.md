@@ -6,7 +6,7 @@ Welcome to the **TaskBoard Technical Architecture Hub**. This document provides 
 
 ## 🏛️ 1. Architecture Philosophy: The Modular Monolith
 
-TaskBoard is architected as a **Modular Monolith** managed via **Turborepo**. This hybrid approach combines the simplicity of a single codebase with the strict isolation of microservices.
+TaskBoard is architected as a **Modular Monolith** managed via **pnpm workspaces** and structured as a monorepo. This hybrid approach combines the simplicity of a single codebase with the strict isolation of microservices.
 
 > [!NOTE]
 > **Why this choice?** It allows for extreme developer velocity while ensuring that individual modules are "Detachable"—ready to be spun into dedicated microservices as the system scales.
@@ -15,7 +15,7 @@ TaskBoard is architected as a **Modular Monolith** managed via **Turborepo**. Th
 
 Our logic is encapsulated within self-contained modules in `src/modules`. Each operates its own ecosystem:
 
-- 🔐 **Auth Module:** Handling secure onboarding and session integrity.
+- 🔐 **Auth Module:** Handling secure onboarding, OTP verification, and cookie-based session management.
 - 📁 **Projects & Tasks:** The high-concurrency core workflow engine.
 - 💬 **Comments & Stats:** Real-time engagement and data-aggregation layers.
 
@@ -25,14 +25,15 @@ Our logic is encapsulated within self-contained modules in `src/modules`. Each o
 
 Standardized utilities form the foundation of our system, ensuring that security and communication patterns remain consistent across all modules.
 
-| Utility       | Responsibility                   | Technology            |
-| :------------ | :------------------------------- | :-------------------- |
-| **Security**  | Salting, Hashing & JWT Rotation  | `Bcrypt`, `JWT`       |
-| **Messaging** | AMQP Logic & Payload Marshalling | `RabbitMQ`, `Buffer`  |
-| **Real-time** | Event Routing & Room Management  | `Socket.io`, `Bridge` |
+| Utility        | Responsibility                      | Technology                          |
+| :------------- | :---------------------------------- | :---------------------------------- |
+| **Security**   | Salting, Hashing & Cookie-Based JWT | `Bcrypt`, `JWT`, `httpOnly Cookies` |
+| **Validation** | Request Schema Validation           | `Ajv` (JSON Schema)                 |
+| **Messaging**  | AMQP Logic & Payload Marshalling    | `RabbitMQ`, `Buffer`                |
+| **Real-time**  | Event Routing & Room Management     | `Socket.io`, `Bridge`               |
 
 > [!IMPORTANT]
-> **Security First:** No password ever hits the database in plain text, and every session validation requires a matching, rotated refresh token pair.
+> **Security First:** No password ever hits the database in plain text. Tokens are delivered via `httpOnly` cookies to prevent XSS attacks. Password hashes are automatically stripped from all API responses.
 
 ---
 
@@ -48,7 +49,7 @@ To maintain a **<100ms API response time**, TaskBoard offloads all non-blocking 
 4. **Background Execution:** The **Worker Service** consumes messages to perform high-latency tasks:
     - 📧 **Communications:** Sending OTPs and welcome emails.
     - 📊 **Analytics:** Recalculating project status and user productivity.
-    - 📄 **Reporting:** Generating downloadable logs and exports.
+    - 📄 **Reporting:** Generating daily summaries and exports.
 
 ---
 
@@ -70,14 +71,28 @@ We optimize for both **Cold Storage** (persistence) and **Hot Storage** (perform
 
 ### 🍃 **MongoDB: Source of Truth**
 
-- Stores persistent entities (Users, Tasks, Projects).
+- Stores persistent entities (Users, Tasks, Projects, Sessions).
 - Flexible schema allows for rapid iteration of task attributes.
 
 ### ⚡ **Redis: High-Performance Cache**
 
-- **Session Store:** Tracking active JWTs for instant revocation.
 - **OTP Manager:** Storing verification codes with strict 3-minute TTLs.
 - **Rate Limiter:** Protecting the infrastructure from abuse and DDoS attempts.
+- **Session Cache:** Quick validation of active sessions.
+
+---
+
+## 🔒 6. Cookie-Based Authentication
+
+> [!IMPORTANT]
+> TaskBoard uses **httpOnly cookies** for token delivery, providing enterprise-grade security.
+
+| Feature                | Implementation                                |
+| :--------------------- | :-------------------------------------------- |
+| **Token Storage**      | `httpOnly` cookies (not localStorage)         |
+| **XSS Protection**     | Tokens inaccessible to JavaScript             |
+| **CSRF Protection**    | `sameSite: strict` cookie flag                |
+| **Session Management** | Multi-device session tracking with revocation |
 
 ---
 
@@ -90,4 +105,4 @@ The visual below illustrates the end-to-end journey of data through our stack—
 ---
 
 > [!CAUTION]
-> Unauthorized changes to the **Infrastructure Layer** or the **AMQP Exchange Topology** can lead to system-wide desynchronization. Always consult the `packages/common/rabbit-topology.js` before making changes.
+> Unauthorized changes to the **Infrastructure Layer** or the **AMQP Exchange Topology** can lead to system-wide desynchronization. Always consult the `packages/common/` before making changes.
