@@ -1,43 +1,40 @@
-# 🎧 TaskBoard Master Consumer
+# 🎧 Taskboard Master Consumer & Event Relay
 
-The **TaskBoard Consumer** is the primary entry point for all events entering the Worker system. It acts as a traffic controller, receiving raw messages and distributing them to specialized sub-handlers.
+The **Taskboard Master Consumer** is the "Central Nervous System" of the worker service. It manages complex event subscription patterns and orchestrates the parallel execution of specialized handlers.
 
 ---
 
-## 🛠️ Internal Mechanics
+## ⚡ 1. The Real-time Pulse: Event Distribution
 
-### 🔹 1. Topology Binding
+The master consumer binds to the **taskboard.events** exchange, listening for specific patterns across our business modules.
 
-The consumer asserts its presence in the RabbitMQ network by binding to multiple routing patterns:
+### 🔹 Binding Patterns
 
-- `task.*` (Creation, Update, Deletion)
-- `otp.*` (One-Time Password requests)
-- `comment.*` (New discussions)
-- `project.*` (Workspace changes)
+- `task.#` (CRUD operations on items)
+- `otp.#` (Security & Authentication events)
+- `comment.#` (Engagement & Discussion spikes)
+- `project.#` (Workspace management changes)
 
-### 🔹 2. Sequential Dispatching
+> [!NOTE]
+> We use **Topic Exchanges** allowing specific listeners to "opt-in" to only the relevant streams of data, optimizing resource consumption.
 
-When a message arrives, the consumer executes a **Parallel-Execution Pattern**:
+---
 
-1. **Parse:** Converts the AMQP buffer to a JSON event.
-2. **Dispatch:** Forwards the event to `handleMail`, `handleNotification`, `handleAnalytics`, and `handleStats` in sequence.
-3. **Acknowledgment:** Sends a final `ACK` to RabbitMQ once all handlers have finished processing.
+## 📊 Event Processing Flow
+
+This sequence diagram tracks exactly how a raw byte stream from RabbitMQ is transformed into system-wide updates.
+
+![Taskboard Consumer Processing Flow](/docs/images/worker/taskboard-consumer.png)
+
+---
+
+## 🛠️ 2. Parallel Handler Orchestration
+
+Instead of linear execution, the TaskBoard consumer utilizes a **Broadcast-Notify Pattern**:
+
+1. **Validation:** Checks event schema integrity.
+2. **Parallel Dispatch:** Executes Mail, Notify, Analytics, and Stats handlers simultaneously using `Promise.all` logic.
+3. **Reliable ACK:** An acknowledgment is only sent to RabbitMQ when all internal operations achieve a "Success" state.
 
 > [!TIP]
-> **Safe Processing:** Each handler is wrapped in a try/catch block within the consumer to ensure that a failure in one (e.g., Mailer) doesn't prevent another (e.g., Stats) from running.
-
----
-
-## 📊 Consumer Flow
-
-| Layer             | Responsibility                            |
-| :---------------- | :---------------------------------------- |
-| **AMQP Receiver** | Physical message pickup from RabbitMQ     |
-| **JSON Parser**   | Schema validation and metadata extraction |
-| **Distributor**   | Orchestrating sub-handlers                |
-| **ACK Manager**   | Queue cleanup and flow control            |
-
----
-
-> [!IMPORTANT]
-> The TaskBoard consumer ensures **Exactly-Once** processing (within the limits of the ACK system), preventing duplicate side effects in the secondary storage layers.`
+> **Fault Tolerance:** If any single handler fails, the entire message is safely rejected and can be rerouted to a Dead Letter Queue (DLQ).

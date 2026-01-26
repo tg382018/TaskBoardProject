@@ -1,31 +1,39 @@
-# ⏱️ Daily Summary Job (Cron)
+# ⏱️ Daily Summary Engine (Cron)
 
-The Daily Summary job is a scheduled task that aggregates user activity over a 24-hour window to provide high-level productivity insights.
-
----
-
-## 🛠️ Execution Loop
-
-The job is scheduled via `node-cron` to run once every 24 hours (default: 00:00 TR Time / 21:00 UTC).
-
-### 🔹 Processing Pipeline:
-
-1. **Fetch:** Retrieves all `EventLog` entries from the last 24 hours.
-2. **Grouping:** Sorts and groups events by the `userId` or `creatorId` involved.
-3. **Summarization:** Translates raw events (like `task.updated`) into readable messages (e.g., "Changed status of task X to Done").
-4. **Persistence:** Saves the final summary into the `UserDailySummary` collection.
+The Summary Engine is a robust data-processing pipeline that transforms thousands of raw activity logs into insightful, human-readable productivity reports.
 
 ---
 
-## 📊 Summary Structure
+## 🚀 1. The Execution Lifecycle
 
-| Field          | Purpose                                                   |
-| :------------- | :-------------------------------------------------------- |
-| **activities** | Chronological list of formatted messages.                 |
-| **stats**      | Total counts for the day (Tasks created, Comments added). |
-| **date**       | The specific day this snapshot represents.                |
+Every day at **00:00 (TR Time)**, the cron mechanism triggers a specialized aggregation pipeline.
+
+### 🔹 Step-by-Step Logic
+
+- 🔍 **Scan:** Queries the **EventLog** for all activities within the last 24-hour window.
+- 🧩 **Group:** Dynamically clusters activities based on unique user identities.
+- ✍️ **Humanize:** Converts technical event codes into narrative messages (e.g., `task.created` -> _"Created Task X"_).
+- 💾 **Commit:** Updates the `UserDailySummary` collection with a unique Date+User constraint.
 
 ---
 
-> [!TIP]
-> **Manual Triggering:** In development environments, this job can be manually triggered via a POST request to the Worker's Admin server (`:4000/trigger-daily-summary`) to test reporting logic without waiting for midnight.
+## 📊 Data Aggregation Flow
+
+This flowchart describes the extraction-transformation-loading (ETL) process of the daily job.
+
+![Daily Summary Job Logic Map](/docs/images/worker/daily-summary.png)
+
+---
+
+## 📈 2. Denormalized Insights
+
+Beyond just messages, the job computes a set of high-level statistics:
+
+| Metric         | Description                                     |
+| :------------- | :---------------------------------------------- |
+| **Velocity**   | Ratio of Tasks Created vs. Updated              |
+| **Engagement** | Frequency of comments and project participation |
+| **Growth**     | New projects initialized or joined              |
+
+> [!NOTE]
+> Summaries are stored in a **ready-to-serve** format, allowing the frontend to display rich activity feeds without complex server-side joins.

@@ -52,24 +52,8 @@ A real-time collaborative project management application built with modern web t
 ## ⚙️ Worker
 
 - [Worker Overview](worker/overview.md)
-- [Worker Startup](worker/startup.md)
-
-### Consumers
-
 - [Taskboard Consumer](worker/consumers/taskboard.md)
-- [Mailer Consumer](worker/consumers/mailer.md)
-- [Notifier Consumer](worker/consumers/notifier.md)
-- [Analytics Consumer](worker/consumers/analytics.md)
-- [Stats Consumer](worker/consumers/stats.md)
-
-### Jobs
-
 - [Daily Summary Job](worker/jobs/daily-summary.md)
-
-### Models
-
-- [Event Model](worker/models/event.md)
-- [UserStats Model](worker/models/userstats.md)
 
 ---
 
