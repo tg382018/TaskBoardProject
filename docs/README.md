@@ -2,6 +2,8 @@
 
 A real-time collaborative project management application built with modern web technologies. TaskBoard enables teams to organize tasks, track progress, and communicate seamlessly through an intuitive interface.
 
+Turkish Explanation Video : https://youtu.be/jzy2P4b6LuM?si=t1IGTYfwwRhVEH9F
+
 ---
 
 ## 🛠️ Technologies
