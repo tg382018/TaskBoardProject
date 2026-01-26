@@ -1,20 +1,31 @@
 # 🧭 Routing & Navigation
 
-> Page navigation, route definitions, and layout system.
+TaskBoard uses **React Router v7** with protected routes and layout-based organization.
 
 ---
 
-## Coming Soon
+## 📍 Route Table
 
-This documentation is under development.
-
-### Topics to be covered:
-
-- [ ] Route table
-- [ ] Protected routes
-- [ ] Layout system
-- [ ] Lazy loading
+| Path            | Component     | Auth Required |
+| :-------------- | :------------ | :------------ |
+| `/login`        | Login         | ❌            |
+| `/register`     | Register      | ❌            |
+| `/dashboard`    | Dashboard     | ✅            |
+| `/projects`     | ProjectsList  | ✅            |
+| `/projects/:id` | ProjectDetail | ✅            |
+| `/tasks/:id`    | TaskDetail    | ✅            |
+| `/profile`      | Profile       | ✅            |
+| `/docs`         | Documentation | ❌            |
 
 ---
 
-[Back to Frontend Overview](./overview.md)
+## 🛡️ Protected Routes
+
+Routes requiring authentication are wrapped with a guard that:
+
+1. Checks for valid session cookies
+2. Redirects to `/login` if unauthorized
+3. Preserves the intended destination for post-login redirect
+
+> [!NOTE]
+> Authentication state is managed by Zustand store and synced with cookie-based sessions.

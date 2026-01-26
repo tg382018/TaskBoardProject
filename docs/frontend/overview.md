@@ -34,13 +34,13 @@ TaskBoard's frontend follows these core principles:
 
 ## 📊 Data Flow Architecture
 
-![Frontend Data Flow](../images/frontend/frontend-data.png)
+![Frontend Data Flow](/docs/images/frontend/frontend-data.png)
 
 ---
 
 ## 🔄 Provider Hierarchy
 
-![Provider Hierarchy](../images/frontend/provider-hierarchy.png)
+![Provider Hierarchy](/docs/images/frontend/provider-hierarchy.png)
 
 > [!IMPORTANT]
 > **Order matters!** QueryClientProvider must wrap SocketProvider so socket events can trigger query invalidations.
@@ -105,7 +105,3 @@ Managed by `ThemeProvider` with localStorage persistence:
 
 > [!NOTE]
 > The production bundle is ~930KB gzipped to ~288KB, with opportunities for further splitting.
-
----
-
-[Back to Documentation](../README.md)

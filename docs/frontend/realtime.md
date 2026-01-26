@@ -25,7 +25,3 @@ The `SocketProvider` establishes and manages the WebSocket connection:
 
 > [!TIP]
 > Joining a project room (`socket.emit("project:join", id)`) subscribes to all its events.
-
----
-
-[Back to Frontend Overview](./overview.md)

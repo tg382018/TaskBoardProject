@@ -6,7 +6,7 @@ TaskBoard uses a **monorepo** structure with shared packages to ensure consisten
 
 ## 📊 Package Overview
 
-![Packages Overview](../images/frontend/packages-overview.png)
+![Packages Overview](/docs/images/frontend/packages-overview.png)
 
 ---
 
@@ -20,7 +20,3 @@ TaskBoard uses a **monorepo** structure with shared packages to ensure consisten
 
 > [!TIP]
 > Shared validation schemas ensure frontend and backend enforce identical rules.
-
----
-
-[Back to Documentation](../README.md)

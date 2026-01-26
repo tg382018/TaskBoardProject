@@ -13,7 +13,3 @@ TaskBoard uses a **hybrid state strategy** combining Zustand for client state an
 
 > [!TIP]
 > Socket events trigger `queryClient.invalidateQueries()` for real-time sync without polling.
-
----
-
-[Back to Frontend Overview](./overview.md)

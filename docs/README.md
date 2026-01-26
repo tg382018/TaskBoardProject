@@ -1,15 +1,39 @@
 # TaskBoard Documentation
 
-Welcome to the official documentation for the TaskBoard project.
+A real-time collaborative project management application built with modern web technologies. TaskBoard enables teams to organize tasks, track progress, and communicate seamlessly through an intuitive interface.
 
-## 📖 Navigation
+---
 
-### Core Backend
+## 🛠️ Technologies
+
+| Layer         | Technologies                                          |
+| :------------ | :---------------------------------------------------- |
+| **Frontend**  | React 19, Vite, TanStack Query, Zustand, Tailwind CSS |
+| **Backend**   | Node.js, Express, MongoDB, Redis, RabbitMQ            |
+| **Real-time** | Socket.io                                             |
+| **Auth**      | JWT (Cookie-based), OTP Verification                  |
+
+---
+
+## 🖥️ Frontend
+
+- [Architecture Overview](frontend/overview.md)
+- [Routing & Navigation](frontend/routing.md)
+- [State Management](frontend/state-management.md)
+- [Authentication Flow](frontend/auth.md)
+- [Real-time Updates](frontend/realtime.md)
+- [UI Components](frontend/components.md)
+
+---
+
+## 🔧 Backend
+
+### Core
 
 - [Architecture Overview](backend/overview.md)
-- [Server Startup Process](startup.md)
+- [Server Startup](startup.md)
 
-### Backend Modules
+### Modules
 
 - [Authentication](backend/auth.md)
 - [Projects](backend/projects.md)
@@ -18,11 +42,45 @@ Welcome to the official documentation for the TaskBoard project.
 - [Comments](backend/comments.md)
 - [Statistics](backend/stats.md)
 
-### System Infrastructure
+### Infrastructure
 
-- [Asynchronous Events](events.md)
+- [Event System](events.md)
 - [Real-time Sockets](sockets.md)
 
 ---
 
-_Created with ❤️ by the TaskBoard Team._
+## ⚙️ Worker
+
+- [Worker Overview](worker/overview.md)
+- [Worker Startup](worker/startup.md)
+
+### Consumers
+
+- [Taskboard Consumer](worker/consumers/taskboard.md)
+- [Mailer Consumer](worker/consumers/mailer.md)
+- [Notifier Consumer](worker/consumers/notifier.md)
+- [Analytics Consumer](worker/consumers/analytics.md)
+- [Stats Consumer](worker/consumers/stats.md)
+
+### Jobs
+
+- [Daily Summary Job](worker/jobs/daily-summary.md)
+
+### Models
+
+- [Event Model](worker/models/event.md)
+- [UserStats Model](worker/models/userstats.md)
+
+---
+
+## 📦 Packages
+
+- [Packages Overview](packages/overview.md)
+- [@packages/ui](packages/ui.md)
+- [@packages/common](packages/common.md)
+
+---
+
+## 📮 API Testing
+
+- [Postman Collection](postman/README.md)

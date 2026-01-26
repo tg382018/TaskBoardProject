@@ -1,20 +1,35 @@
 # 🎨 @packages/ui - Component Library
 
-> Shared shadcn/ui based UI components.
+A collection of **shadcn/ui** based components shared across the frontend.
 
 ---
 
-## Coming Soon
+## 📦 Available Components (10)
 
-This documentation is under development.
-
-### Topics to be covered:
-
-- [ ] Why a separate package?
-- [ ] shadcn/ui integration
-- [ ] Tailwind CSS & cn() utility
-- [ ] Component catalog (10 components)
+| Component      | File              | Description               |
+| :------------- | :---------------- | :------------------------ |
+| **Button**     | `button.jsx`      | Multiple variants & sizes |
+| **Badge**      | `badge.jsx`       | Status indicators         |
+| **Card**       | `card.jsx`        | Container with sections   |
+| **Dialog**     | `dialog.jsx`      | Modal windows             |
+| **Input**      | `input.jsx`       | Text input                |
+| **Label**      | `label.jsx`       | Form labels               |
+| **ScrollArea** | `scroll-area.jsx` | Custom scrollbar          |
+| **Sheet**      | `sheet.jsx`       | Side panels               |
+| **Skeleton**   | `skeleton.jsx`    | Loading state             |
+| **Table**      | `table.jsx`       | Data tables               |
 
 ---
 
-[Back to Packages Overview](./overview.md)
+## 🛠️ Utilities
+
+### cn() - Class Name Merger
+
+```javascript
+import { cn } from "@packages/ui";
+
+cn("base-class", condition && "conditional-class");
+```
+
+> [!NOTE]
+> Components are built on **Radix UI** primitives with **Tailwind CSS** styling.

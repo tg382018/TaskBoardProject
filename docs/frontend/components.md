@@ -1,20 +1,44 @@
 # 🎨 UI Components
 
-> App-specific UI components and widgets.
+TaskBoard uses a layered component architecture with shared and app-specific components.
 
 ---
 
-## Coming Soon
+## 📦 Shared Components (@packages/ui)
 
-This documentation is under development.
+Reusable across the entire monorepo:
 
-### Topics to be covered:
-
-- [ ] Local UI components (AlertDialog, Select, Toast, etc.)
-- [ ] Common components (DataTable, EmptyState)
-- [ ] Widget components (UserStats, DailySummary)
-- [ ] Theme system
+| Component         | Description                          |
+| :---------------- | :----------------------------------- |
+| `Button`          | Primary, secondary, ghost variants   |
+| `Card`            | Container with header/content/footer |
+| `Dialog`          | Modal dialogs                        |
+| `Input` / `Label` | Form inputs                          |
+| `Table`           | Data tables                          |
+| `Badge`           | Status indicators                    |
+| `Skeleton`        | Loading placeholders                 |
 
 ---
 
-[Back to Frontend Overview](./overview.md)
+## 🎯 App-Specific Components
+
+Located in `apps/web/src/app/components/ui/`:
+
+| Component      | Description          |
+| :------------- | :------------------- |
+| `AlertDialog`  | Confirmation dialogs |
+| `DropdownMenu` | Context menus        |
+| `Select`       | Dropdown selects     |
+| `Toast`        | Notifications        |
+
+---
+
+## 📊 Widgets
+
+Dashboard widgets in `components/widgets/`:
+
+- **UserStatsWidget** - User productivity stats
+- **DailySummaryWidget** - Daily activity feed
+
+> [!NOTE]
+> Shared components are imported from `@packages/ui`, app-specific from `@/app/components/ui`.

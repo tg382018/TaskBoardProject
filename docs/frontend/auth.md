@@ -23,7 +23,3 @@ The frontend implements a secure **cookie-based authentication** flow with OTP v
 
 > [!IMPORTANT]
 > Tokens are **never** stored in localStorage, preventing XSS attacks from stealing credentials.
-
----
-
-[Back to Frontend Overview](./overview.md)

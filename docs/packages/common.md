@@ -1,19 +1,37 @@
 # 🔗 @packages/common - Shared Logic
 
-> Validation schemas and constants shared between frontend and backend.
+Validation schemas and constants shared between frontend and backend.
 
 ---
 
-## Coming Soon
+## 📋 Validation Schemas
 
-This documentation is under development.
-
-### Topics to be covered:
-
-- [ ] Validation schemas (JSON Schema)
-- [ ] Constants and enums
-- [ ] Why shared validation matters
+| Schema          | File                | Used In              |
+| :-------------- | :------------------ | :------------------- |
+| `authSchema`    | `auth.schema.js`    | Login, Register, OTP |
+| `taskSchema`    | `task.schema.js`    | Task CRUD            |
+| `projectSchema` | `project.schema.js` | Project CRUD         |
+| `commentSchema` | `comment.schema.js` | Comments             |
+| `userSchema`    | `user.schema.js`    | Profile updates      |
 
 ---
 
-[Back to Packages Overview](./overview.md)
+## 🎯 Constants
+
+```javascript
+// constants.js
+export const TaskStatus = {
+    TODO: "Todo",
+    IN_PROGRESS: "InProgress",
+    DONE: "Done",
+};
+
+export const TaskPriority = {
+    LOW: "Low",
+    MEDIUM: "Medium",
+    HIGH: "High",
+};
+```
+
+> [!IMPORTANT]
+> Using shared constants prevents frontend/backend enum mismatches.
